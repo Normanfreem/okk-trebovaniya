@@ -247,7 +247,7 @@ const $=id=>document.getElementById(id);
 const norm=s=>String(s==null?'':s).toLowerCase().replace(/ё/g,'е').replace(/[.\s/]+/g,' ').trim();
 
 /* ---------- хранилище ---------- */
-const mem={data:null,pdf:{}};
+const mem={kv:{},pdf:{}};
 let dbp=null;
 function db(){
   if(dbp) return dbp;
@@ -261,14 +261,14 @@ function db(){
   return dbp;
 }
 async function put(store,key,val){
-  if(store==='kv') mem.data=val; else mem.pdf[key]=val;
+  if(store==='kv') mem.kv[key]=val; else mem.pdf[key]=val;
   const d=await db(); if(!d) return;
   try{await new Promise((res,rej)=>{const t=d.transaction(store,'readwrite');t.objectStore(store).put(val,key);t.oncomplete=res;t.onerror=rej;});}catch(e){}
 }
 async function get(store,key){
   const d=await db();
   if(d){try{const v=await new Promise((res,rej)=>{const r=d.transaction(store).objectStore(store).get(key);r.onsuccess=()=>res(r.result);r.onerror=rej;}); if(v!==undefined) return v;}catch(e){}}
-  return store==='kv'?mem.data:mem.pdf[key];
+  return store==='kv'?mem.kv[key]:mem.pdf[key];
 }
 async function pdfKeys(){
   const d=await db(); const s=new Set(Object.keys(mem.pdf));
@@ -276,7 +276,7 @@ async function pdfKeys(){
   return s;
 }
 async function clearAll(){
-  mem.data=null;mem.pdf={};
+  mem.kv={};mem.pdf={};
   const d=await db(); if(!d) return;
   try{await new Promise(res=>{const t=d.transaction(['kv','pdf'],'readwrite');t.objectStore('kv').clear();t.objectStore('pdf').clear();t.oncomplete=res;t.onerror=res;});}catch(e){}
 }
@@ -336,7 +336,7 @@ function parseWorkbook(buf){
 }
 
 /* ---------- импорт ---------- */
-const cp866=(()=>{try{const d=new TextDecoder('ibm866');return b=>d.decode(b);}catch(e){return null;}})();
+const cp866=(()=>{let u8=null,d=null;try{u8=new TextDecoder('utf-8',{fatal:true});}catch(e){}try{d=new TextDecoder('ibm866');}catch(e){}if(!d)return null;return b=>{if(u8){try{return u8.decode(b);}catch(e){}}return d.decode(b);};})();
 const base=n=>String(n).split(/[\\/]/).pop();
 async function importFiles(files){
   const out={xlsx:null,xname:'',pdfs:[]};
@@ -415,8 +415,8 @@ const blockHint={'Материал':'входной контроль','Устр�
 function setTop(title,crumb,back){
   $('top').innerHTML=(back?`<button class="ibtn" id="bk" aria-label="Назад">${I.back}</button>`:'')+
    `<h1>${crumb?`<span class="crumb">${esc(crumb)}</span>`:''}${esc(title)}</h1>`+
-   (!back?`<button class="ibtn" id="dat" aria-label="Данные и обновление">${I.db}</button>`:'');
-  if(back) $('bk').onclick=goBack; else $('dat').onclick=()=>push({v:'data'});
+   (!back&&D&&!S.gate?`<button class="ibtn" id="dat" aria-label="Данные и обновление">${I.db}</button>`:'');
+  if(back) $('bk').onclick=goBack; else if($('dat')) $('dat').onclick=()=>push({v:'data'});
 }
 function renderNav(){
   const n=D?recent().length:0;
@@ -429,6 +429,7 @@ function goBack(){S.stack.pop();render();}
 function render(){
   renderNav();
   const m=$('main');
+  if(S.gate) return vGate();
   if(!D){setTop('Требования ОКК');m.innerHTML=`<div class="empty">Данных пока нет.</div><button class="btn pri" id="up">${I.upload}Загрузить файл</button><button class="btn" id="demo">Открыть пример</button>`;$('up').onclick=pick;$('demo').onclick=loadDemo;return;}
   const v=S.stack[S.stack.length-1];
   if(!v) return ({home:vHome,mat:vMatList,chg:vChanges,docs:vDocs})[S.tab]();
@@ -636,20 +637,74 @@ function vData(){
   setTop('Данные','',true);
   const need=D.docs.filter(d=>d.file);
   let h=`<div class="stat"><div><b>${esc(D.asof||'—')}</b><small>актуально на</small></div><div><b>${D.reqs.filter(q=>q.status==='active').length}</b><small>требований</small></div><div><b>${D.docs.length}</b><small>документов</small></div></div>`;
-  h+=`<button class="btn pri" id="up">${I.upload}Загрузить обновление</button><div class="note">Выберите архив .zip из чата или Excel и PDF по отдельности. Можно несколько файлов сразу.</div>`;
+  if(REMOTE.on) h+=`<button class="btn pri" id="sync">${I.upload}Проверить обновление</button><div class="note" id="syncmsg">Данные обновляются сами при запуске, если есть интернет.${D.syncedAt?' Последняя проверка: '+new Date(D.syncedAt).toLocaleString('ru-RU'):''}</div>`;
+  else h+=`<button class="btn pri" id="up">${I.upload}Загрузить обновление</button><div class="note">Выберите архив .zip из чата или Excel и PDF по отдельности. Можно несколько файлов сразу.</div>`;
   h+=`<div class="lbl">PDF в телефоне</div><div class="list">`+need.map(d=>`<div class="tap" style="cursor:default"><span class="t"><b>${esc(d.file)}</b><small>${esc(d.code)}</small></span>${hasPdf(d)?'<span class="pill p-new">есть</span>':'<span class="pill p-warn">нет</span>'}</div>`).join('')+`</div>`;
   if(D.warns&&D.warns.length) h+=`<div class="lbl">Замечания к таблице</div>`+D.warns.map(e=>`<div class="msg m-warn">${esc(e.t)}</div>`).join('');
-  h+=`<button class="btn" id="demo">Сбросить и открыть пример</button>`;
+  if(!REMOTE.on) h+=`<button class="btn" id="demo">Сбросить и открыть пример</button>`;
   $('main').innerHTML=h;
-  $('up').onclick=pick; $('demo').onclick=loadDemo;
+  if($('up')) $('up').onclick=pick; if($('demo')) $('demo').onclick=loadDemo;
+  if($('sync')) $('sync').onclick=async()=>{$('syncmsg').textContent='Проверяю…';const r=await syncRemote(true);if(r==='same')$('syncmsg').textContent='У вас последняя версия.';else if(r==='offline')$('syncmsg').textContent='Нет связи. Попробуйте позже.';};
+}
+
+/* ---------- обновление с сервера (зашифрованный data.okk) ---------- */
+const REMOTE={on:false,ver:null};
+async function fetchVer(){
+  if(!/^https?:/.test(location.protocol)) return 'none';
+  try{const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'}); if(r.status===404) return 'none'; if(!r.ok) return 'offline'; const v=await r.json(); if(!v||!v.id) return 'none'; REMOTE.on=true; REMOTE.ver=v; try{localStorage.setItem('okk-remote','1')}catch(e){} return v;}
+  catch(e){return 'offline';}
+}
+async function decryptOkk(buf,pwd){
+  const u=new Uint8Array(buf);
+  if(String.fromCharCode(...u.slice(0,4))!=='OKK1') throw new Error('bad');
+  const salt=u.slice(4,20), iv=u.slice(20,32), ct=u.slice(32);
+  const km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pwd),'PBKDF2',false,['deriveKey']);
+  const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:200000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['decrypt']);
+  return await crypto.subtle.decrypt({name:'AES-GCM',iv},key,ct);
+}
+async function syncRemote(manual,pwdIn){
+  const v=await fetchVer();
+  if(v==='none'||v==='offline') return v;
+  if(D&&D.remoteId===v.id&&!pwdIn){D.syncedAt=Date.now();await put('kv','data',D);return 'same';}
+  const pwd=pwdIn||await get('kv','pwd');
+  if(!pwd){S.gate={};render();return 'need';}
+  let buf; try{const r=await fetch('data.okk?v='+encodeURIComponent(v.id),{cache:'no-store'}); if(!r.ok) throw 0; buf=await r.arrayBuffer();}catch(e){return 'offline';}
+  let zip; try{zip=await decryptOkk(buf,pwd);}catch(e){await put('kv','pwd',null);S.gate={err:pwdIn?'Неверный пароль':'Пароль изменился. Введите новый пароль.'};render();return 'badpwd';}
+  const r=await importFiles([new File([zip],'data.zip')]);
+  if(!r.failed){const d=await get('kv','data');d.remoteId=v.id;d.syncedAt=Date.now();d.demo=false;await put('kv','data',d);await put('kv','pwd',pwd);}
+  await reload(); S.gate=null; S.tab='home'; S.stack=[{v:'imp',r}]; render(); window.scrollTo(0,0);
+  return 'updated';
+}
+function vGate(){
+  setTop('Требования ОКК');
+  const g=S.gate||{};
+  $('main').innerHTML=`<div class="card"><div style="font-weight:500;margin-bottom:6px">Вход</div><div class="note">Введите пароль, который выдал ответственный ОКК. Вводится один раз, дальше данные обновляются сами.</div></div>
+  <form id="gf" class="sec" autocomplete="off"><label class="search"><input id="pw" type="password" placeholder="Пароль" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false"></label>
+  <div id="pwerr" class="msg m-err" ${g.err?'':'hidden'}>${esc(g.err||'')}</div>
+  <button class="btn pri" id="go" type="submit">Войти</button></form>`;
+  $('pw').oninput=()=>{$('pwerr').hidden=true;};
+  $('gf').onsubmit=async e=>{e.preventDefault();const p=$('pw').value.trim();if(!p){$('pwerr').textContent='Введите пароль';$('pwerr').hidden=false;return;}
+    $('go').textContent='Загружаю данные…';const r=await syncRemote(true,p);
+    if(r==='offline'){$('go').textContent='Войти';$('pwerr').textContent='Нет связи с сервером. Проверьте интернет.';$('pwerr').hidden=false;}};
+}
+function vNoNet(){
+  setTop('Требования ОКК');
+  $('main').innerHTML=`<div class="empty">Для первой загрузки данных нужен интернет.</div><button class="btn pri" id="rt">Повторить</button>`;
+  $('rt').onclick=start;
 }
 
 /* ---------- старт ---------- */
-(async()=>{
+async function start(){
   try{await reload();}catch(e){}
+  let remoteKnown=false; try{remoteKnown=localStorage.getItem('okk-remote')==='1'}catch(e){}
+  if(D&&!D.demo){render(); syncRemote(false); return;}
+  const r=await syncRemote(false);
+  if(r==='updated'||r==='need'||r==='badpwd') return;
+  if(r==='offline'&&(remoteKnown||/github\.io$/.test(location.hostname))){vNoNet();return;}
   if(!D){try{await loadDemo();return;}catch(e){}}
   render();
-})();
+}
+start();
 })();
 </script>
 
