@@ -424,8 +424,10 @@ function renderNav(){
   $('nav').innerHTML=t.map(([k,l,ic])=>`<button class="navb${S.tab===k&&!S.stack.length?' on':''}" data-tab="${k}">${ic}${k==='chg'&&n?`<span class="dot">${n}</span>`:''}<span>${l}</span></button>`).join('');
   $('nav').querySelectorAll('.navb').forEach(b=>b.onclick=()=>{S.tab=b.dataset.tab;S.stack=[];S.q='';render();window.scrollTo(0,0);});
 }
-function push(v){S.stack.push(v);render();window.scrollTo(0,0);}
-function goBack(){S.stack.pop();render();}
+S.rootY={};
+function push(v){const cur=S.stack[S.stack.length-1];const y=window.scrollY||0;if(cur)cur.y=y;else S.rootY[S.tab]=y;S.stack.push(v);render();window.scrollTo(0,0);}
+function restoreY(y){y=y||0;window.scrollTo(0,y);requestAnimationFrame(()=>window.scrollTo(0,y));setTimeout(()=>window.scrollTo(0,y),60);}
+function goBack(){S.stack.pop();const cur=S.stack[S.stack.length-1];const y=cur?cur.y:S.rootY[S.tab];if(cur)cur.back=true;render();restoreY(y);}
 function render(){
   renderNav();
   const m=$('main');
@@ -504,7 +506,7 @@ function vEl(v){
   const blocks=[...new Set(A.map(q=>q.block))].sort((a,b)=>blockOrder(a)-blockOrder(b));
   $('main').innerHTML=blocks.map(b=>`<section class="sec"><div class="sech"><h2>${esc(b)}</h2><span>${esc(blockHint[b]||'')}</span></div>${A.filter(q=>q.block===b).map(reqCard).join('')}</section>`).join('')||'<div class="empty">Нет действующих требований</div>';
   bindSrc($('main'));
-  if(v.focus){const el=document.getElementById('r-'+v.focus);if(el){el.classList.add('hl');setTimeout(()=>el.scrollIntoView({block:'center'}),30);}}
+  if(v.focus&&!v.back){const el=document.getElementById('r-'+v.focus);if(el){el.classList.add('hl');setTimeout(()=>el.scrollIntoView({block:'center'}),30);}}
 }
 function vMatList(){
   setTop('Материалы');
