@@ -82,10 +82,11 @@ main{flex:1;padding:14px 16px 96px;display:flex;flex-direction:column;gap:14px}
 .req{scroll-margin-top:64px}.req.hl{outline:2px solid var(--accent);outline-offset:1px}
 .req h3{margin:0;font-size:15px;font-weight:600;display:flex;gap:8px;align-items:flex-start;justify-content:space-between}
 .req h3 .id{font-family:var(--mono);font-size:11px;color:var(--ink3);font-weight:400;padding-top:3px}
-.kv{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 12px;font-size:14px}
+.kv{display:grid;grid-template-columns:minmax(min(45%,150px),1fr) minmax(0,max-content);gap:0 12px;font-size:14px}
 .kv>div{padding:6px 0;border-top:1px dashed var(--line)}
 .kv>div:nth-child(-n+2){border-top:0}
-.kv .v{text-align:right;font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums;max-width:60vw}
+.kv .v{text-align:right;font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+[hidden]{display:none!important}
 .kv .full{grid-column:1/-1}
 .src{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;background:var(--accent-bg);color:var(--accent-ink);border:0;border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;text-align:left}
 .src svg{width:16px;height:16px;flex:none}
@@ -128,6 +129,36 @@ details.old .kv{opacity:.75;text-decoration:line-through;text-decoration-color:v
 .doctext{font-size:14px;white-space:pre-wrap;line-height:1.5}
 mark{background:var(--warn-bg);color:inherit;padding:0 1px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.brand{display:none}
+@media (min-width:1000px){
+  body{padding-left:240px}
+  body.side-open{padding-right:min(48vw,860px)}
+  .app{max-width:1180px}
+  .top{padding:12px 32px;min-height:60px}
+  .top h1{font-size:19px}
+  main{padding:22px 32px 48px;gap:16px}
+  .nav{left:0;top:0;bottom:0;right:auto;width:240px;border-top:0;border-right:1px solid var(--line);padding:0;overflow:auto}
+  .nav .in{display:flex;flex-direction:column;gap:2px;padding:0 10px 16px;max-width:none}
+  .brand{display:block;font-weight:600;font-size:16px;padding:18px 12px 16px;color:var(--ink)}
+  .brand small{display:block;font-weight:400;font-size:12px;color:var(--ink3);margin-top:2px;font-family:var(--mono)}
+  .navb{flex-direction:row;justify-content:flex-start;gap:12px;font-size:15px;padding:10px 12px;border-radius:8px;color:var(--ink2)}
+  .navb:hover{background:var(--surface2)}
+  .navb.on{background:var(--accent-bg);color:var(--accent-ink)}
+  .navb .dot{position:static;order:3;margin-left:auto}
+  .blk{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:12px;align-items:start}
+  .blk>.sech{grid-column:1/-1}
+  body.side-open .blk{grid-template-columns:1fr}
+  .list,.card,.search,.ver,.stat,.banner,.btn,.msg{max-width:900px}
+  .tap:hover{background:var(--surface2)}
+  .src:hover{filter:brightness(.96)}
+  .side{position:fixed;top:0;right:0;bottom:0;width:min(48vw,860px);background:var(--bg);border-left:1px solid var(--line2);z-index:7;display:flex;flex-direction:column}
+  .side .sh{display:flex;align-items:center;gap:8px;padding:10px 12px 10px 18px;background:var(--nav);color:var(--nav-ink);min-height:60px}
+  .side .st{flex:1;min-width:0}.side .st b{display:block;font-size:16px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .side .crumb{display:block;font-size:12px;opacity:.75;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .side .sb{flex:1;overflow:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px}
+  .side .page{scroll-margin-top:8px}
+}
+@media (max-width:999px){.side{display:none!important}}
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
 </style>
 
@@ -135,6 +166,7 @@ mark{background:var(--warn-bg);color:inherit;padding:0 1px}
   <header class="top" id="top"></header>
   <main id="main"></main>
 </div>
+<aside class="side" id="side" hidden aria-label="Документ"></aside>
 <nav class="nav" aria-label="Разделы"><div class="in" id="nav"></div></nav>
 <input type="file" id="file" class="sr" multiple accept=".zip,.xlsx,.pdf,application/zip,application/pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
 
@@ -407,6 +439,8 @@ function recent(){ // изменения за 10 дней до даты акту
 function docBy(code){return D.docs.find(d=>d.code===code);}
 function hasPdf(doc){return doc&&doc.file&&PK.has(doc.file.toLowerCase());}
 function replacedBy(id){return D.reqs.filter(q=>q.repl===id);}
+const WIDE=window.matchMedia('(min-width:1000px)');
+try{WIDE.addEventListener('change',()=>{if(!WIDE.matches)closeSide();});}catch(e){}
 const BORDER=['Материал','Устройство','Приёмка'];
 const blockOrder=b=>{const i=BORDER.findIndex(x=>norm(x)===norm(b));return i<0?9:i;};
 const blockHint={'Материал':'входной контроль','Устройство':'операционный контроль','Приёмка':'приёмочный контроль'};
@@ -421,7 +455,7 @@ function setTop(title,crumb,back){
 function renderNav(){
   const n=D?recent().length:0;
   const t=[['home','Конструктивы',I.layers],['mat','Материалы',I.box],['chg','Изменения',I.bell],['docs','Документы',I.file]];
-  $('nav').innerHTML=t.map(([k,l,ic])=>`<button class="navb${S.tab===k&&!S.stack.length?' on':''}" data-tab="${k}">${ic}${k==='chg'&&n?`<span class="dot">${n}</span>`:''}<span>${l}</span></button>`).join('');
+  $('nav').innerHTML=`<div class="brand">Требования ОКК${D&&D.asof?`<small>актуально на ${esc(D.asof)}</small>`:''}</div>`+t.map(([k,l,ic])=>`<button class="navb${S.tab===k&&!S.stack.length?' on':''}" data-tab="${k}">${ic}${k==='chg'&&n?`<span class="dot">${n}</span>`:''}<span>${l}</span></button>`).join('');
   $('nav').querySelectorAll('.navb').forEach(b=>b.onclick=()=>{S.tab=b.dataset.tab;S.stack=[];S.q='';render();window.scrollTo(0,0);});
 }
 S.rootY={};
@@ -498,13 +532,13 @@ function reqCard(q){
   for(const o of olds){const d=docBy(o.doc);h+=`<details class="old"><summary>Было раньше · ${esc(d?d.code:o.doc)}, стр. ${o.page}</summary>${kvHtml(o.text)}</details>`;}
   return h+`</article>`;
 }
-function bindSrc(root){root.querySelectorAll('.src').forEach(b=>b.onclick=()=>push({v:'pdf',doc:b.dataset.doc,page:+b.dataset.page}));}
+function bindSrc(root){root.querySelectorAll('.src').forEach(b=>b.onclick=()=>openDoc({doc:b.dataset.doc,page:+b.dataset.page}));}
 function vEl(v){
   const A=active().filter(q=>q.kon===v.k&&q.el===v.e);
   const els=new Set(active().filter(q=>q.kon===v.k).map(q=>q.el));
   setTop(v.e,els.size>1?v.k:'',true);
   const blocks=[...new Set(A.map(q=>q.block))].sort((a,b)=>blockOrder(a)-blockOrder(b));
-  $('main').innerHTML=blocks.map(b=>`<section class="sec"><div class="sech"><h2>${esc(b)}</h2><span>${esc(blockHint[b]||'')}</span></div>${A.filter(q=>q.block===b).map(reqCard).join('')}</section>`).join('')||'<div class="empty">Нет действующих требований</div>';
+  $('main').innerHTML=blocks.map(b=>`<section class="sec blk"><div class="sech"><h2>${esc(b)}</h2><span>${esc(blockHint[b]||'')}</span></div>${A.filter(q=>q.block===b).map(reqCard).join('')}</section>`).join('')||'<div class="empty">Нет действующих требований</div>';
   bindSrc($('main'));
   if(v.focus&&!v.back){const el=document.getElementById('r-'+v.focus);if(el){el.classList.add('hl');setTimeout(()=>el.scrollIntoView({block:'center'}),30);}}
 }
@@ -549,7 +583,7 @@ function vDoc(v){
   h+=hasPdf(d)?`<button class="btn pri" id="op">${I.file}Открыть PDF</button>`:`<div class="msg m-warn">PDF «${esc(d.file||'не указан')}» не загружен в приложение. Добавьте его через «Данные».</div>`;
   h+=`<div class="lbl">Требования по документу · ${qs.length}</div><div class="list">`+qs.map(q=>row(esc(q.mat||q.el)+(q.status==='old'?' <span class="pill p-old">заменено</span>':''),`${esc(q.kon)} › ${esc(q.el)} · стр. ${q.page}`,'',`data-go="${esc(q.id)}"`)).join('')+`</div>`;
   $('main').innerHTML=h;
-  if($('op')) $('op').onclick=()=>push({v:'pdf',doc:d.code,page:1});
+  if($('op')) $('op').onclick=()=>openDoc({doc:d.code,page:1});
   $('main').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{const r=D.reqs.find(x=>x.id===b.dataset.go);if(r.status==='old'){const n=D.reqs.find(x=>x.id===r.repl);if(n)return push({v:'el',k:n.kon,e:n.el,focus:n.id});}push({v:'el',k:r.kon,e:r.el,focus:r.id});});
 }
 
@@ -568,18 +602,31 @@ function pdfLib(){
 async function vPdf(v){
   const d=docBy(v.doc);
   setTop(d?d.code:v.doc,'стр. '+v.page,true);
-  const m=$('main');
-  if(!hasPdf(d)){m.innerHTML=`<div class="msg m-warn">PDF для «${esc(v.doc)}» не загружен. На листе «Документы» указан файл «${esc(d&&d.file||'—')}». Загрузите его через «Данные».</div>${d&&d.text?`<div class="card doctext">${esc(d.text)}</div>`:''}`;return;}
-  m.innerHTML=`<div class="pdfbar"><span id="pinfo">Открываю…</span><span class="sp"></span><button id="zo" aria-label="Уменьшить">−</button><button id="zi" aria-label="Увеличить">+</button></div><div class="pages" id="pages"></div>`;
   const token=S.stack.length;
+  await pdfInto($('main'),v,()=>S.stack.length===token);
+}
+let sideTok=0;
+function openSide(v){
+  const d=docBy(v.doc); const sd=$('side'); const my=++sideTok;
+  sd.hidden=false; document.body.classList.add('side-open');
+  sd.innerHTML=`<div class="sh"><div class="st"><span class="crumb">${esc(d?d.name||'':'')}</span><b>${esc(d?d.code:v.doc)}</b></div><button class="ibtn" id="sx" aria-label="Закрыть документ">${I.x}</button></div><div class="sb" id="sb"></div>`;
+  $('sx').onclick=closeSide;
+  pdfInto($('sb'),v,()=>my===sideTok);
+}
+function closeSide(){sideTok++;const sd=$('side');sd.hidden=true;sd.innerHTML='';document.body.classList.remove('side-open');}
+function openDoc(v){if(WIDE.matches) openSide(v); else push({v:'pdf',doc:v.doc,page:v.page});}
+async function pdfInto(m,v,alive){
+  const d=docBy(v.doc);
+  if(!hasPdf(d)){m.innerHTML=`<div class="msg m-warn">PDF для «${esc(v.doc)}» не загружен. На листе «Документы» указан файл «${esc(d&&d.file||'—')}».</div>${d&&d.text?`<div class="card doctext">${esc(d.text)}</div>`:''}`;return;}
+  m.innerHTML=`<div class="pdfbar"><span class="pinfo">Открываю…</span><span class="sp"></span><button class="zo" aria-label="Уменьшить">−</button><button class="zi" aria-label="Увеличить">+</button></div><div class="pages"></div>`;
   try{
     const L=await pdfLib();
     const blob=await get('pdf',d.file.toLowerCase());
     const doc=await L.getDocument({data:new Uint8Array(await blob.arrayBuffer())}).promise;
-    if(S.stack.length!==token) return;
-    let zoom=1; const box=$('pages');
+    if(!alive()) return;
+    let zoom=1; const box=m.querySelector('.pages');
     const target=Math.min(Math.max(1,v.page),doc.numPages);
-    $('pinfo').textContent=`Стр. ${target} из ${doc.numPages}`;
+    m.querySelector('.pinfo').textContent=`Стр. ${target} из ${doc.numPages}`;
     const vps=[]; for(let i=1;i<=doc.numPages;i++){const p=await doc.getPage(i);vps.push(p.getViewport({scale:1}));}
     const draw=()=>{
       const W=Math.max(200,(box.clientWidth||m.clientWidth))*zoom;
@@ -590,8 +637,8 @@ async function vPdf(v){
       const t=box.querySelector('.page.target'); if(t) setTimeout(()=>t.scrollIntoView({block:'start'}),30);
     };
     draw();
-    $('zi').onclick=()=>{zoom=Math.min(6,zoom*1.5);draw();};
-    $('zo').onclick=()=>{zoom=Math.max(1,zoom/1.5);draw();};
+    m.querySelector('.zi').onclick=()=>{zoom=Math.min(6,zoom*1.5);draw();};
+    m.querySelector('.zo').onclick=()=>{zoom=Math.max(1,zoom/1.5);draw();};
   }catch(e){m.innerHTML=`<div class="msg m-err">Не удалось открыть PDF: ${esc(e.message||e)}</div>`;}
 }
 
