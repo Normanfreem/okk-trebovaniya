@@ -151,6 +151,7 @@ mark{background:var(--warn-bg);color:inherit;padding:0 1px}
   body{padding-left:240px}
   body.side-open{padding-right:min(48vw,860px)}
   .app{max-width:1180px}
+  body.wide .app{max-width:none}
   .top{padding:12px 32px;min-height:60px}
   .top h1{font-size:19px}
   main{padding:22px 32px 48px;gap:16px}
@@ -178,6 +179,31 @@ mark{background:var(--warn-bg);color:inherit;padding:0 1px}
   .side .page{scroll-margin-top:8px}
 }
 @media (max-width:999px){.side{display:none!important}}
+.mtab{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.mtab-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:12px 14px}
+.mtab-h h3{margin:0;font-size:15px;font-weight:600}.mtab-h span{font-size:12px;color:var(--ink3)}
+.mtab table{width:100%;border-collapse:collapse}
+.mtab th{text-align:left;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink2);background:var(--surface2);border-bottom:1px solid var(--line2);padding:10px 12px;vertical-align:bottom}
+.mtab td{border-top:1px solid var(--line);padding:10px 12px;font-size:14px;vertical-align:top}
+.mtab td.mv{font-family:var(--mono);font-size:13px}
+.mtab-w{overflow-x:auto}
+.mtab th.mw,.mtab td.mw{min-width:200px;width:22%}
+.mtab td.mv{white-space:normal;min-width:90px}
+.mgo{background:none;border:0;padding:0;font:inherit;font-weight:500;color:var(--ink);text-align:left;cursor:pointer}
+.mgo:hover{color:var(--accent)}
+.mdocs{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.mdocs .src{width:auto}
+@media (max-width:999px){
+  .mtab thead{display:none}
+  .mtab table,.mtab tbody,.mtab tr,.mtab td{display:block;width:auto}
+  .mtab tr{border-top:1px solid var(--line2);padding:6px 0}
+  .mtab td{border-top:0;padding:4px 14px;display:flex;justify-content:space-between;gap:12px}
+  .mtab td::before{content:attr(data-l);font-family:var(--sans);font-size:13px;color:var(--ink2);flex:none;max-width:50%}
+  .mtab td.mw{display:block}.mtab td.mw::before{display:none}
+  .mtab td.mv{text-align:right}
+  .mtab td.em{display:none}
+  .mtab th.mw,.mtab td.mw{min-width:0;width:auto}
+}
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
 </style>
 
@@ -489,6 +515,7 @@ function push(v){const cur=S.stack[S.stack.length-1];const y=window.scrollY||0;i
 function restoreY(y){y=y||0;window.scrollTo(0,y);requestAnimationFrame(()=>window.scrollTo(0,y));setTimeout(()=>window.scrollTo(0,y),60);}
 function goBack(){S.stack.pop();const cur=S.stack[S.stack.length-1];const y=cur?cur.y:S.rootY[S.tab];if(cur)cur.back=true;render();restoreY(y);}
 function render(){
+  document.body.classList.toggle('wide',!!(S.stack.length&&S.stack[S.stack.length-1].v==='matOne'));
   renderNav();
   const m=$('main');
   if(S.gate) return vGate();
@@ -629,32 +656,45 @@ function vMatList(){
   $('main').querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>push({v:'matOne',m:b.dataset.m,byCat}));
 }
 function plainOf(text){return parseItems(text).map(it=>it.t==='g'?it.title.replace(/[,]?\s*мм$/,'')+': '+it.rows.map(r=>r[1]===null?r[0]:r[0]+' '+r[1]).join(', ')+(/мм$/.test(it.title)?' мм':''):it.t==='kv'?it.k.toLowerCase()+' '+it.v:it.v).join('; ');}
+function matItems(text){
+  return parseItems(text).map(it=>it.t==='g'?[it.title,it.rows.map(r=>r[1]===null?r[0]:r[0]+' '+r[1]).join(', ')]:it.t==='kv'?[it.k,it.v]:['Требование',it.v]);
+}
+const REFN=/^(Письмо|СП |ГОСТ|Применяется по письму|Класс —)/;
+function matTables(rows){
+  const M=rows.filter(q=>norm(q.block)===norm('Материал')), O=rows.filter(q=>norm(q.block)!==norm('Материал'));
+  const used=new Set(), recs=[];
+  for(const q of M){let it=matItems(q.text);const ds=[...(q.docs||[])];
+    for(const o of O) if(o.kon===q.kon&&o.el===q.el){used.add(o.id);it=it.concat(matItems(o.text));ds.push(...(o.docs||[]));}
+    recs.push({q,it,ds});}
+  for(const o of O) if(!used.has(o.id)) recs.push({q:o,it:matItems(o.text),ds:[...(o.docs||[])]});
+  const cols=rs=>{const c=[];rs.forEach(r=>r.it.forEach(([k])=>{if(!c.includes(k))c.push(k);}));return c;};
+  if(cols(recs).length<=7) return [{title:null,recs}];
+  const by=new Map(); recs.forEach(r=>{const k=r.q.mat;if(!by.has(k))by.set(k,[]);by.get(k).push(r);});
+  return [...by].map(([title,recs])=>({title,recs}));
+}
+function matTableHtml(t){
+  const cols=[];t.recs.forEach(r=>r.it.forEach(([k])=>{if(!cols.includes(k))cols.push(k);}));
+  const mats=new Set(t.recs.map(r=>r.q.mat)); const title=t.title||(mats.size===1?[...mats][0]:'');
+  const n=new Set(t.recs.map(r=>r.q.kon+'|'+r.q.el)).size;
+  let h=`<div class="mtab">`+(title?`<div class="mtab-h"><h3>${esc(title)}</h3><span>${n} ${plural(n,'место','места','мест')} применения</span></div>`:'');
+  h+=`<div class="mtab-w"><table><thead><tr><th class="mw">Где применяется</th>${cols.map(c=>`<th>${esc(c)}</th>`).join('')}<th>Документ</th></tr></thead><tbody>`;
+  for(const r of t.recs){
+    const d=new Map(r.it); const sub=[];
+    if(!title||r.q.mat!==title) sub.push(r.q.mat);
+    if(r.q.note&&!REFN.test(r.q.note)) sub.push(r.q.note);
+    const seen=[];r.ds.forEach(x=>{if(!seen.some(y=>y.code===x.code&&y.page===x.page))seen.push(x);});
+    h+=`<tr><td class="mw" data-l="Где применяется"><button class="mgo" data-go="${esc(r.q.id)}">${esc(r.q.el)}</button>${sub.map(x=>`<div class="note">${esc(x)}</div>`).join('')}</td>`;
+    h+=cols.map(c=>`<td class="mv${d.has(c)?'':' em'}" data-l="${esc(c)}">${esc(d.has(c)?d.get(c):'—')}</td>`).join('');
+    h+=`<td data-l="Документ"><div class="mdocs">${seen.map(x=>`<button class="src sm" data-doc="${esc(x.code)}" data-page="${x.page}">${I.file}<span>${esc(x.code)}</span><span class="pg">стр. ${x.page}</span></button>`).join('')}</div></td></tr>`;
+  }
+  return h+`</tbody></table></div></div>`;
+}
 function vMatOne(v){
   setTop(v.m,v.byCat?'Вид материала':'Материал',true);
   const A=active().filter(q=>(v.byCat?q.cat:q.mat)===v.m);
-  const M=A.filter(q=>norm(q.block)===norm('Материал')), O=A.filter(q=>norm(q.block)!==norm('Материал'));
-  const used=new Set(); let h='';
-  const specs=[],si=new Map();
-  const isTh=p=>/^толщина(?=[\s,:-]|$)/i.test(p.trim());
-  const baseT=q=>String(q.text).split(/\s*;\s*|\n+/).filter(p=>p.trim()&&!isTh(p)).join('; ');
-  const thT=q=>String(q.text).split(/\s*;\s*|\n+/).filter(isTh).map(p=>p.replace(/\s+[-–—]\s+/,' ').toLowerCase()).join('; ');
-  for(const q of M){const k=norm(baseT(q)); if(si.has(k)) specs[si.get(k)].push(q); else {si.set(k,specs.length);specs.push([q]);}}
-  for(const g of specs){
-    const mats=[...new Set(g.map(q=>q.mat))];
-    const title0=mats.length===1?mats[0]:parseItems(baseT(g[0])).filter(i=>i.t==='kv').map(i=>i.v.replace(/^не (ниже|менее)\s*/,'')).join(' · ')||v.m;
-    const title=title0.charAt(0).toUpperCase()+title0.slice(1);
-    let c=`<article class="req"><h3><span>${esc(title)}</span><span class="id">${g.length>1?g.length+' места':''}</span></h3>${kvHtml(g.length>1?baseT(g[0]):g[0].text)}`;
-    c+=`<div class="kvg"><div class="gh">Где применяется</div><table>`+g.map(q=>{
-      const ex=O.filter(o=>o.kon===q.kon&&o.el===q.el); ex.forEach(o=>used.add(o.id));
-      const det=[mats.length>1?q.mat:'',g.length>1?thT(q):'',...ex.map(o=>plainOf(o.text))].filter(Boolean).join('; ');
-      const x=(q.docs&&q.docs[0])||{code:q.doc,page:q.page};
-      return `<tr><td><b class="wel">${esc(q.el)}</b>${det?`<div class="note">${esc(det)}</div>`:''}${q.note?`<div class="note">${esc(q.note)}</div>`:''}<div style="margin-top:6px"><button class="src sm" data-doc="${esc(x.code)}" data-page="${x.page}">${I.file}<span>${esc(x.code)}</span><span class="pg">стр. ${x.page}</span></button></div></td></tr>`;}).join('')+`</table></div></article>`;
-    h+=c;
-  }
-  const rest=O.filter(o=>!used.has(o.id));
-  if(rest.length) h+=`<div class="lbl">Прочие требования</div>`+groupCards(rest).map(g=>`<div class="sec"><div class="path">${esc(g[0].kon)} › ${esc(g[0].el)}</div>${reqCard(g)}</div>`).join('');
-  $('main').innerHTML=`<section class="sec blk">${h}</section>`||'<div class="empty">Нет требований</div>';
+  $('main').innerHTML=matTables(A).map(matTableHtml).join('')||'<div class="empty">Нет требований</div>';
   bindSrc($('main'));
+  $('main').querySelectorAll('.mgo').forEach(b=>b.onclick=()=>{const q=D.reqs.find(x=>x.id===b.dataset.go);if(q)push({v:'el',k:q.kon,e:q.el,focus:q.id});});
 }
 function vChanges(){
   setTop('Изменения');
