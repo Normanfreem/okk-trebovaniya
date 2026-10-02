@@ -165,8 +165,6 @@ mark{background:var(--warn-bg);color:inherit;padding:0 1px}
   .blk{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:stretch}
   .blk.two{grid-template-columns:repeat(2,minmax(0,1fr));width:calc((100% - 24px) * 2 / 3 + 12px);align-self:center}
   .blk .req{height:100%;box-sizing:border-box}
-  .blk .req>.part:last-child{flex-grow:1}
-  .blk .req>.part:last-child>.srcline{margin-top:auto}
   .blk>.sech{grid-column:1/-1}
   body.side-open .blk,body.side-open .blk.two{grid-template-columns:1fr;width:auto}
   .list,.card,.search,.ver,.stat,.banner,.btn,.msg{max-width:900px}
@@ -557,7 +555,7 @@ function parseItems(text){
 }
 function kvHtml(text){
   const items=parseItems(text); let h='',kv=[];
-  const flush=()=>{if(kv.length){h+=`<div class="kv">`+kv.map(x=>x.t!=='kv'?`<div class="full">${esc(x.v)}</div>`:(x.v.length>26?`<div class="full kl">${esc(x.k)}</div><div class="full kvl">${esc(x.v)}</div>`:`<div>${esc(x.k)}</div><div class="v">${esc(x.v)}</div>`)).join('')+`</div>`;kv=[];}};
+  const flush=()=>{if(kv.length){const lim=kv.some(x=>x.t==='kv'&&x.v.length>26)?16:26;h+=`<div class="kv">`+kv.map(x=>x.t!=='kv'?`<div class="full">${esc(x.v)}</div>`:(x.v.length>lim?`<div class="full kl">${esc(x.k)}</div><div class="full kvl">${esc(x.v)}</div>`:`<div>${esc(x.k)}</div><div class="v">${esc(x.v)}</div>`)).join('')+`</div>`;kv=[];}};
   for(const it of items){
     if(it.t==='g'){flush();h+=`<div class="kvg"><div class="gh">${esc(it.title)}</div><table>`+it.rows.map(r=>r[1]===null?`<tr><td colspan="2" class="li">${esc(r[0])}</td></tr>`:`<tr><td>${esc(r[0])}</td><td class="v">${esc(r[1])}</td></tr>`).join('')+`</table></div>`;}
     else kv.push(it);
