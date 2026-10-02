@@ -588,7 +588,27 @@ function reqCard(rows){
   }
   return h+`</article>`;
 }
-function bindSrc(root){root.querySelectorAll('.src').forEach(b=>b.onclick=()=>openDoc({doc:b.dataset.doc,page:+b.dataset.page}));}
+function alignChips(){
+  const cards=[...document.querySelectorAll('.blk .req')];
+  const partsOf=c=>[...c.querySelectorAll(':scope>.part')].map(p=>p.querySelector(':scope>.srcline')).filter(Boolean);
+  const L=cards.map(partsOf);
+  L.flat().forEach(l=>{l.style.marginTop='';});
+  if(!WIDE.matches||document.body.classList.contains('side-open')) return;
+  const rows=new Map();
+  cards.forEach((c,i)=>{if(!L[i].length)return;const k=Math.round(c.getBoundingClientRect().top);(rows.get(k)||rows.set(k,[]).get(k)).push(i);});
+  const fit=(ids,pick)=>{const off=ids.map(i=>pick(i).getBoundingClientRect().top-cards[i].getBoundingClientRect().top);const mx=Math.max(...off);
+    ids.forEach((i,j)=>{if(mx-off[j]>0.5){const l=pick(i);l.style.marginTop=((parseFloat(l.style.marginTop)||0)+mx-off[j])+'px';}});};
+  for(const ids of rows.values()){
+    if(ids.length<2) continue;
+    const n=L[ids[0]].length;
+    if(ids.every(i=>L[i].length===n)){for(let j=0;j<n;j++) fit(ids,i=>L[i][j]);}
+    else fit(ids,i=>L[i][L[i].length-1]);
+  }
+}
+let alignT=0; function alignSoon(){clearTimeout(alignT);alignT=setTimeout(alignChips,30);}
+window.addEventListener('resize',alignSoon);
+try{document.fonts&&document.fonts.ready.then(alignSoon);}catch(e){}
+function bindSrc(root){alignSoon();root.querySelectorAll('.src').forEach(b=>b.onclick=()=>openDoc({doc:b.dataset.doc,page:+b.dataset.page}));}
 function vEl(v){
   const A=active().filter(q=>q.kon===v.k&&q.el===v.e);
   const els=new Set(active().filter(q=>q.kon===v.k).map(q=>q.el));
@@ -686,12 +706,12 @@ async function vPdf(v){
 let sideTok=0;
 function openSide(v){
   const d=docBy(v.doc); const sd=$('side'); const my=++sideTok;
-  sd.hidden=false; document.body.classList.add('side-open');
+  sd.hidden=false; document.body.classList.add('side-open'); alignSoon();
   sd.innerHTML=`<div class="sh"><div class="st"><span class="crumb">${esc(d?d.name||'':'')}</span><b>${esc(d?d.code:v.doc)}</b></div><button class="ibtn" id="sx" aria-label="Закрыть документ">${I.x}</button></div><div class="sb" id="sb"></div>`;
   $('sx').onclick=closeSide;
   pdfInto($('sb'),v,()=>my===sideTok);
 }
-function closeSide(){sideTok++;const sd=$('side');sd.hidden=true;sd.innerHTML='';document.body.classList.remove('side-open');}
+function closeSide(){setTimeout(alignSoon,0);sideTok++;const sd=$('side');sd.hidden=true;sd.innerHTML='';document.body.classList.remove('side-open');}
 function openDoc(v){if(WIDE.matches) openSide(v); else push({v:'pdf',doc:v.doc,page:v.page});}
 async function pdfInto(m,v,alive){
   const d=docBy(v.doc);
