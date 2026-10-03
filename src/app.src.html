@@ -199,6 +199,51 @@ mark{background:var(--warn-bg);color:inherit;padding:0 1px}
   .mtab td.em{display:none}
   .mtab th.mw,.mtab td.mw{min-width:0;width:auto}
 }
+
+/* ---- вариант A: «Главное сверху» ---- */
+.ktiles{display:grid;grid-template-columns:1fr;gap:10px}
+.ktile{display:flex;flex-direction:column;gap:8px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;cursor:pointer;min-height:56px}
+.ktile:hover{border-color:var(--line2)}
+.ktile .kh{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.ktile b{font-size:16px;font-weight:600;line-height:1.25}
+.ktile small{color:var(--ink2);font-size:13px}
+.kchips{display:flex;flex-wrap:wrap;gap:6px}
+.kchip{font-family:var(--mono);font-size:12.5px;background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:3px 7px;color:var(--ink)}
+.kchip i{font-style:normal;color:var(--ink3);font-family:var(--sans);margin-right:4px}
+.keys{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.key{background:var(--nav);color:var(--nav-ink);border:0;border-radius:12px;padding:10px 12px;text-align:left;display:flex;flex-direction:column;gap:2px;cursor:pointer;min-height:64px}
+.key span{font-size:11px;letter-spacing:.06em;text-transform:uppercase;opacity:.75}
+.key b{font-family:var(--mono);font-size:15.5px;font-weight:500;line-height:1.2}
+.key small{font-size:12px;opacity:.75;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jump{position:sticky;top:calc(env(safe-area-inset-top,0px) + 52px);z-index:4;display:flex;gap:6px;background:var(--bg);padding:6px 0;margin:-6px 0}
+.jump button{flex:1;border:1px solid var(--line2);background:var(--surface);border-radius:20px;min-height:36px;font-size:13px;cursor:pointer}
+.jump button b{font-family:var(--mono);font-weight:500;color:var(--ink3);margin-left:4px}
+@media (min-width:1000px){.key b{font-size:18px}.ktiles{grid-template-columns:repeat(3,minmax(0,1fr));max-width:none}.keys{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}.jump{top:60px}}
+/* ---- вариант B: «Рабочее место» ---- */
+.acc .req{gap:0}
+.acc .req>h3{cursor:pointer;padding:2px 0}
+.acc .req .sum{font-size:13px;color:var(--ink2);margin-top:4px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.acc .req:not(.open)>.part{display:none}
+.acc .req.open .sum{display:none}
+.acc .req.open>.part:first-of-type{margin-top:8px}
+.acc .req>h3 .tw{display:flex;align-items:center;gap:8px}
+.chk{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);background:var(--surface);border-radius:16px;padding:3px 10px 3px 4px;font-size:12px;cursor:pointer;flex:none;min-height:28px}
+.chk i{width:20px;height:20px;border-radius:50%;border:2px solid var(--line2);display:grid;place-items:center;font-style:normal}
+.chk.on{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+.chk.on i{background:var(--ok);border-color:var(--ok);color:#fff}
+.accbar{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--ink2)}
+.accbar button{border:1px solid var(--line2);background:var(--surface);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px}
+.tree{display:none}
+@media (min-width:1000px){
+  .tree{display:flex;flex-direction:column;gap:1px;margin:2px 0 8px 22px;border-left:1px solid var(--line);padding-left:8px}
+  .tree button{display:flex;justify-content:space-between;gap:8px;text-align:left;background:none;border:0;border-radius:6px;padding:6px 8px;font-size:13.5px;color:var(--ink2);cursor:pointer;line-height:1.3}
+  .tree button:hover{background:var(--surface2)}
+  .tree button.on{background:var(--accent-bg);color:var(--accent-ink);font-weight:500}
+  .tree button small{font-family:var(--mono);font-size:11px;color:var(--ink3);flex:none}
+  .tree .sub{margin-left:12px}
+  .acc .blk{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .acc .blk.two{width:auto}
+}
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
 </style>
 
@@ -215,6 +260,7 @@ mark{background:var(--warn-bg);color:inherit;padding:0 1px}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
 const PDF_WORKER='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const VAR=window.OKK_VAR||'';
 const DEMO_B64='__DEMO_ZIP__';
 </script>
 <script>
@@ -392,6 +438,8 @@ function makeDiff(prev,next){
 
 /* ---------- состояние ---------- */
 let D=null, PK=new Set();
+const OPEN=new Set();
+const CHK=new Set((()=>{try{return JSON.parse(localStorage.getItem('okk-chk')||'[]')}catch(e){return []}})());
 const S={tab:'home',stack:[],obj:null,q:''};
 try{S.obj=localStorage.getItem('okk-obj')}catch(e){}
 function active(){return D.reqs.filter(q=>q.status==='active'&&(!S.obj||q.obj===S.obj));}
@@ -425,6 +473,17 @@ function renderNav(){
   const t=[['home','Конструктивы',I.layers],['mat','Материалы',I.box],['chg','Изменения',I.bell],['docs','Документы',I.file]];
   $('nav').innerHTML=`<div class="brand">Требования ОКК${D&&D.asof?`<small>актуально на ${esc(D.asof)}</small>`:''}</div>`+t.map(([k,l,ic])=>`<button class="navb${S.tab===k&&!S.stack.length?' on':''}" data-tab="${k}">${ic}${k==='chg'&&n?`<span class="dot">${n}</span>`:''}<span>${l}</span></button>`).join('');
   $('nav').querySelectorAll('.navb').forEach(b=>b.onclick=()=>{S.tab=b.dataset.tab;S.stack=[];S.q='';render();window.scrollTo(0,0);});
+  if(VAR==='b'&&D&&!S.gate){
+    const A=active(); const cur=S.stack.find(x=>x.v==='kon'||x.v==='el'); const curEl=S.stack.find(x=>x.v==='el');
+    const kons=[...new Set(A.map(q=>q.kon))];
+    let t='<div class="tree">'+kons.map(k=>{const qs=A.filter(q=>q.kon===k);const els=[...new Set(qs.map(q=>q.el))];const cards=groupCards(qs);const dn=cards.filter(c=>CHK.has(c[0].id)).length;const open=cur&&cur.k===k;
+      let x=`<button data-tk="${esc(k)}" class="${open&&(!curEl||els.length===1)?'on':''}"><span>${esc(k)}</span><small>${dn}/${cards.length}</small></button>`;
+      if(open&&els.length>1) x+=els.map(e=>{const cs=groupCards(qs.filter(q=>q.el===e));const d2=cs.filter(c=>CHK.has(c[0].id)).length;return `<button class="sub${curEl&&curEl.e===e?' on':''}" data-tk="${esc(k)}" data-te="${esc(e)}"><span>${esc(e)}</span><small>${d2}/${cs.length}</small></button>`;}).join('');
+      return x;}).join('')+'</div>';
+    const home=$('nav').querySelector('[data-tab="home"]'); home.insertAdjacentHTML('afterend',t);
+    $('nav').querySelectorAll('[data-tk]').forEach(b=>b.onclick=()=>{S.tab='home';const k=b.dataset.tk,e=b.dataset.te;const els=[...new Set(A.filter(q=>q.kon===k).map(q=>q.el))];
+      S.stack=e?[{v:'kon',k},{v:'el',k,e}]:(els.length===1?[{v:'el',k,e:els[0]}]:[{v:'kon',k}]);render();window.scrollTo(0,0);});
+  }
 }
 S.rootY={};
 function push(v){const cur=S.stack[S.stack.length-1];const y=window.scrollY||0;if(cur)cur.y=y;else S.rootY[S.tab]=y;S.stack.push(v);render();window.scrollTo(0,0);}
@@ -453,7 +512,9 @@ function vHome(){
   h+=`<div id="homeBody">`;
   if(D.demo) h+=`<button class="banner info" id="dm">${I.alert}<span>Это пример (версия от ${esc(D.asof)}). Загрузите архив из чата, чтобы увидеть, как приходит обновление.</span></button>`;
   if(rc.length) h+=`<button class="banner" id="rc">${I.bell}<span><b>${rc.length}</b> ${plural(rc.length,'изменение','изменения','изменений')} за 10 дней по письмам</span></button>`;
-  h+=`<div class="lbl">Конструктивы</div><div class="list">`+kons.map(k=>{const qs=A.filter(q=>q.kon===k);const els=new Set(qs.map(q=>q.el));const c=rc.filter(q=>q.kon===k&&q.status==='active').length;return row(esc(k),`${els.size} ${plural(els.size,'элемент','элемента','элементов')} · ${qs.length} ${plural(qs.length,'требование','требования','требований')}`,chgPill(c),`data-k="${esc(k)}"`);}).join('')+`</div></div>`;
+  if(VAR==='a'){h+=`<div class="lbl">Конструктивы</div><div class="ktiles">`+kons.map(k=>{const qs=A.filter(q=>q.kon===k);const els=new Set(qs.map(q=>q.el));const c=rc.filter(q=>q.kon===k&&q.status==='active').length;const kv=keyVals(qs).slice(0,4);
+    return `<button class="ktile" data-k="${esc(k)}"><span class="kh"><span><b>${esc(k)}</b><br><small>${els.size>1?els.size+' '+plural(els.size,'элемент','элемента','элементов')+' · ':''}${qs.length} ${plural(qs.length,'требование','требования','требований')}</small></span>${chgPill(c)}</span>${kv.length?`<span class="kchips">${kv.map(x=>`<span class="kchip"><i>${esc(x.k==='Бетон'?'':x.k)}</i>${esc(x.v)}</span>`).join('')}</span>`:''}</button>`;}).join('')+`</div></div>`;}
+  else h+=`<div class="lbl">Конструктивы</div><div class="list">`+kons.map(k=>{const qs=A.filter(q=>q.kon===k);const els=new Set(qs.map(q=>q.el));const c=rc.filter(q=>q.kon===k&&q.status==='active').length;return row(esc(k),`${els.size} ${plural(els.size,'элемент','элемента','элементов')} · ${qs.length} ${plural(qs.length,'требование','требования','требований')}`,chgPill(c),`data-k="${esc(k)}"`);}).join('')+`</div></div>`;
   $('main').innerHTML=h;
   $('main').querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>push({v:'kon',k:b.dataset.k}));
   if($('rc')) $('rc').onclick=()=>{S.tab='chg';S.stack=[];render();};
@@ -473,6 +534,22 @@ function doSearch(){
 function hl(t,words){let s=esc(t);for(const w of words){if(w.length<2)continue;s=s.replace(new RegExp('('+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark>$1</mark>');}return s;}
 function plural(n,a,b,c){n=Math.abs(n)%100;const n1=n%10;if(n>10&&n<20)return c;if(n1>1&&n1<5)return b;if(n1===1)return a;return c;}
 
+
+const KEYDEF=[['Бетон',null],['Ку',/^коэффициент уплотнения/],['Кф',/^коэффициент фильтрации/],['Неоднородность',/^степень неоднородности/],['Ev2/Ev1',/^ev2\/ev1/],['Evd',/^evd$/],['Отпускная прочность',/^отпускная прочность/]];
+function shortV(v){return String(v).replace(/^не менее\s*/,'≥ ').replace(/^не более\s*/,'≤ ').replace(/^более\s*/,'> ').replace(/^менее\s*/,'< ').replace(/\s*\(.*?\)\s*/g,' ').replace(/ по всей ширине слоя/,'').replace(/ проектной/,'').trim();}
+function keyVals(rows){
+  const out=[];const add=(k,v,q)=>{v=shortV(v);if(!v)return;const f=out.find(x=>x.k===k&&x.v===v);if(f){if(q.mat&&!f.subs.includes(q.mat))f.subs.push(q.mat);}else out.push({k,v,subs:q.mat?[q.mat]:[],id:q.id});};
+  for(const q of rows){
+    if(norm(q.block)===norm('Устройство')) continue;
+    const it=parseItems(q.text); const kv=[];
+    it.forEach(x=>{if(x.t==='kv')kv.push([x.k,x.v]);else if(x.t==='g')x.rows.forEach(r=>{if(r[1]!==null)kv.push([r[0],r[1]]);});});
+    const g=k=>{const f=kv.find(([a])=>norm(a).startsWith(k));return f?f[1]:null;};
+    const cls=g('класс по прочности');
+    if(cls){const fz=g('морозостойкость'),w=g('водонепроницаемость');add('Бетон',[cls,fz,w].filter(Boolean).join(' · '),q);}
+    for(const [k,re] of KEYDEF){if(!re)continue;const f=kv.find(([a])=>re.test(String(a).toLowerCase().replace(/ё/g,'е').trim()));if(f)add(k,f[1],q);}
+  }
+  return out;
+}
 function vKon(v){
   const A=active().filter(q=>q.kon===v.k); const els=[...new Set(A.map(q=>q.el))];
   if(els.length===1){S.stack[S.stack.length-1]={v:'el',k:v.k,e:els[0]};return render();}
@@ -520,7 +597,10 @@ function reqCard(rows){
   const rcIds=new Set(recent().map(r=>r.id));
   const st=rows.map(q=>{const olds=replacedBy(q.id);const isNew=D.diff&&!D.diff.first&&D.diff.added.includes(q.id);return {q,olds,isNew,changed:olds.length||(q.date&&rcIds.has(q.id))};});
   const q0=rows[0];
-  let h=`<article class="req${st.some(x=>x.changed)?' changed':''}"><h3><span>${esc(q0.mat||q0.el)}</span><span class="id">${esc(rows.length>1?rows[0].id+'…':q0.id)}</span></h3>`;
+  let h;
+  if(VAR==='b'){const on=CHK.has(q0.id);const opn=OPEN.has(q0.id);const sum=rows.map(q=>parseItems(q.text).map(it=>it.t==='g'?it.title+' '+it.rows.map(r=>r[1]===null?r[0]:r[0]+' '+r[1]).join(', '):it.t==='kv'?it.k+' '+it.v:it.v).join('; ')).join('; ');
+    h=`<article class="req${st.some(x=>x.changed)?' changed':''}${opn?' open':''}" data-o="${esc(q0.id)}"><h3><span>${esc(q0.mat||q0.el)}</span><span class="tw"><button class="chk${on?' on':''}" data-c="${esc(q0.id)}" aria-pressed="${on}"><i>${on?'✓':''}</i>${on?'проверено':'проверить'}</button></span></h3><div class="sum">${esc(sum)}</div>`;}
+  else h=`<article class="req${st.some(x=>x.changed)?' changed':''}"><h3><span>${esc(q0.mat||q0.el)}</span><span class="id">${esc(rows.length>1?rows[0].id+'…':q0.id)}</span></h3>`;
   for(const {q,olds,isNew,changed} of st){
     h+=`<div class="part" id="r-${esc(q.id)}">`+kvHtml(q.text);
     if(changed||isNew) h+=`<div class="meta">${q.date&&changed?`<span class="pill p-warn">${olds.length?'изменено':'добавлено'} ${esc(q.date)}</span>`:''}${isNew?'<span class="pill p-new">новое в этой версии</span>':''}</div>`;
@@ -558,7 +638,29 @@ function vEl(v){
   setTop(v.e,els.size>1?v.k:'',true);
   const blocks=[...new Set(A.map(q=>q.block))].sort((a,b)=>blockOrder(a)-blockOrder(b));
   const showH=blocks.some(b=>norm(b)===norm('Приёмка'));
-  $('main').innerHTML=blocks.map(b=>{const cs=groupCards(A.filter(q=>q.block===b));const two=cs.length>=4&&cs.length%2===0&&cs.length%3!==0;return `<section class="sec blk${two?' two':''}">${showH?`<div class="sech"><h2>${esc(b)}</h2><span>${esc(blockHint[b]||'')}</span></div>`:''}${cs.map(reqCard).join('')}</section>`;}).join('')||'<div class="empty">Нет действующих требований</div>';
+  let pre='';
+  if(VAR==='a'){
+    const kv=keyVals(A).slice(0,8);
+    if(kv.length) pre+=`<div class="sech"><h2>Главное</h2><span>нажмите — откроется карточка</span></div><div class="keys">${kv.map(x=>`<button class="key" data-go="${esc(x.id)}"><span>${esc(x.k)}</span><b>${esc(x.v)}</b><small>${esc(x.subs.join(', '))}</small></button>`).join('')}</div>`;
+    if(blocks.length>1) pre+=`<div class="jump">${blocks.map((b,i)=>`<button data-j="${i}">${esc(b)}<b>${groupCards(A.filter(q=>q.block===b)).length}</b></button>`).join('')}</div>`;
+  }
+  if(VAR==='b'){
+    const cards=groupCards(A); const done=cards.filter(c=>CHK.has(c[0].id)).length;
+    pre+=`<div class="accbar"><span>Проверено <b>${done}</b> из ${cards.length}</span><button id="accAll">${S.accAll?'Свернуть все':'Развернуть все'}</button></div>`;
+  }
+  $('main').innerHTML=pre+blocks.map((b,bi)=>{const cs=groupCards(A.filter(q=>q.block===b));const two=VAR!=='b'&&cs.length>=4&&cs.length%2===0&&cs.length%3!==0;return `<section class="sec blk${two?' two':''}" id="blk-${bi}">${showH||VAR==='a'&&blocks.length>1?`<div class="sech"><h2>${esc(b)}</h2><span>${esc(blockHint[b]||'')}</span></div>`:''}${cs.map(reqCard).join('')}</section>`;}).join('')||'<div class="empty">Нет действующих требований</div>';
+  $('main').classList.toggle('acc',VAR==='b');
+  if(VAR==='a'){
+    $('main').querySelectorAll('.key').forEach(k=>k.onclick=()=>{const el0=document.getElementById('r-'+k.dataset.go);const el=el0&&(el0.closest('.req')||el0);if(el){document.querySelectorAll('.req.hl').forEach(x=>x.classList.remove('hl'));el.classList.add('hl');el.scrollIntoView({block:'center',behavior:'smooth'});}});
+    $('main').querySelectorAll('[data-j]').forEach(b=>b.onclick=()=>{const t=$('blk-'+b.dataset.j);if(t){const y=t.getBoundingClientRect().top+window.scrollY-(WIDE.matches?120:110);window.scrollTo({top:y,behavior:'smooth'});}});
+  }
+  if(VAR==='b'){
+    if(S.accAll) $('main').querySelectorAll('.req').forEach(r=>r.classList.add('open'));
+    $('main').querySelectorAll('.req>h3').forEach(h=>h.onclick=e=>{if(e.target.closest('.chk'))return;const a=h.parentElement;a.classList.toggle('open');const id=a.dataset.o;if(a.classList.contains('open'))OPEN.add(id);else OPEN.delete(id);alignSoon();});
+    $('main').querySelectorAll('.chk').forEach(c=>c.onclick=()=>{const id=c.dataset.c;if(CHK.has(id))CHK.delete(id);else CHK.add(id);try{localStorage.setItem('okk-chk',JSON.stringify([...CHK]))}catch(e){}const y=window.scrollY;render();window.scrollTo(0,y);});
+    $('accAll').onclick=()=>{S.accAll=!S.accAll;if(!S.accAll)OPEN.clear();render();};
+    if(v.focus){const el0=document.getElementById('r-'+v.focus);const el=el0&&el0.closest('.req');if(el)el.classList.add('open');}
+  }
   bindSrc($('main'));
   if(v.focus&&!v.back){const el0=document.getElementById('r-'+v.focus);const el=el0&&(el0.closest('.req')||el0);if(el){el.classList.add('hl');setTimeout(()=>el.scrollIntoView({block:'center'}),30);}}
 }
