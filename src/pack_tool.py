@@ -58,10 +58,10 @@ def main():
         for d in dl:
             if d not in docs: errs.append(f'{rid}: документ «{d}» нет на листе «Документы»')
         if pl and len(pl) != len(dl): errs.append(f'{rid}: число страниц ≠ числу документов')
-        if not v('cat'):
+        if not v('cat') and v('bl') == 'Материал':
             c = cat_for(v('el'), v('bl'), v('mat'))
             if c: r[ci['cat']].value = c; warn.append(f'{rid}: вид материала → {c}')
-        elif v('cat') not in CAT_ORDER: warn.append(f'{rid}: новый вид материала «{v("cat")}» (добавить в CAT_ORDER приложения)')
+        elif v('cat') and v('cat') not in CAT_ORDER: warn.append(f'{rid}: новый вид материала «{v("cat")}» (добавить в CAT_ORDER приложения)')
         if re.search(r'мелкозернист\w* B\d', v('text')): warn.append(f'{rid}: «мелкозернистый Bxx» — писать «Класс по прочности - Bxx»')
     for code, f in docs.items():
         if f and not os.path.exists(os.path.join(a.folder, 'Документы', f)): errs.append(f'Документ {code}: нет файла {f}')

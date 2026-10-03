@@ -91,6 +91,7 @@ main{flex:1;padding:14px 16px 96px;display:flex;flex-direction:column;gap:14px}
 .kvg tr+tr td{border-top:1px solid var(--line)}
 .src.sm{padding:4px 8px;font-size:12px;white-space:nowrap;font-family:var(--sans)}
 .wel{font-weight:500}
+.kvg .gk{font-size:13px;color:var(--ink2)}.kvg .gv{font-size:14px;margin-top:2px}
 .kvg td.li{padding-left:22px;position:relative}
 .kvg td.li::before{content:'';position:absolute;left:10px;top:14px;width:5px;height:5px;border-radius:50%;background:var(--ink3)}
 .kvg td.v{text-align:right;font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -499,7 +500,7 @@ function kvHtml(text){
   const items=parseItems(text); let h='',kv=[];
   const flush=()=>{if(kv.length){const lim=kv.some(x=>x.t==='kv'&&x.v.length>26)?16:26;h+=`<div class="kv">`+kv.map(x=>x.t!=='kv'?`<div class="full">${esc(x.v)}</div>`:(x.v.length>lim?`<div class="full kl">${esc(x.k)}</div><div class="full kvl">${esc(x.v)}</div>`:`<div>${esc(x.k)}</div><div class="v">${esc(x.v)}</div>`)).join('')+`</div>`;kv=[];}};
   for(const it of items){
-    if(it.t==='g'){flush();h+=`<div class="kvg"><div class="gh">${esc(it.title)}</div><table>`+it.rows.map(r=>r[1]===null?`<tr><td colspan="2" class="li">${esc(r[0])}</td></tr>`:`<tr><td>${esc(r[0])}</td><td class="v">${esc(r[1])}</td></tr>`).join('')+`</table></div>`;}
+    if(it.t==='g'){flush();h+=`<div class="kvg"><div class="gh">${esc(it.title)}</div><table>`+it.rows.map(r=>r[1]===null?`<tr><td colspan="2" class="li">${esc(r[0])}</td></tr>`:(r[1].length>22?`<tr><td colspan="2"><div class="gk">${esc(r[0])}</div><div class="gv">${esc(r[1])}</div></td></tr>`:`<tr><td>${esc(r[0])}</td><td class="v">${esc(r[1])}</td></tr>`)).join('')+`</table></div>`;}
     else kv.push(it);
   }
   flush(); return h;
