@@ -734,7 +734,11 @@ function pageModel(k){
   if(els.length>1){
     const work=[];
     for(const e of els){const R=A.filter(q=>q.el===e);
-      if(R.some(q=>norm(q.block)===norm('Приёмка'))){
+      const hasP=R.some(q=>norm(q.block)===norm('Приёмка'));
+      if(!(hasP&&groupCards(R).length>6)&&!(!hasP&&els.length>=3)){
+        const R2=[...R].sort((a,b)=>blockOrder(a.block)-blockOrder(b.block));
+        secs.push({title:e,cards:groupCards(R2).map(c=>mk(c[0].mat||c[0].el,c.map(q=>({q,head:''})),e))});
+      } else if(hasP){
         const bl=[...new Set(R.map(q=>q.block))].sort((a,b)=>blockOrder(a)-blockOrder(b));
         for(const b of bl){const cs=groupCards(R.filter(q=>q.block===b));secs.push({title:norm(b)===norm('Приёмка')?'Дефекты и допуски':(norm(b)===norm('Материал')?e:e+' — '+b.toLowerCase()),cards:cs.map(c=>mk(c[0].mat||c[0].el,c.map(q=>({q,head:''})),e))});}
       } else {
