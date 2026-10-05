@@ -201,6 +201,79 @@ mark{background:var(--warn-bg);color:inherit;padding:0 1px}
 }
 
 
+
+/* ===== E: страница-справочник конструктива ===== */
+body.ve main{max-width:none}
+.pg{display:flex;flex-direction:column;gap:14px}
+.pgh .cr{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
+.pgh h1{margin:4px 0 0;font-size:24px;line-height:1.2;font-weight:600}
+.pgh .srcb{display:inline-block;margin-top:8px;font-family:var(--mono);font-size:11.5px;color:var(--ink2);border:1px solid var(--line2);border-radius:6px;padding:4px 8px;background:var(--surface)}
+.pbar{position:sticky;top:calc(env(safe-area-inset-top,0px) + 52px);z-index:4;background:var(--bg);padding:8px 0;display:flex;flex-direction:column;gap:8px}
+.pbar .search{border-width:1.5px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{border:1px solid var(--line2);background:var(--surface);border-radius:16px;padding:6px 12px;font-size:13px;cursor:pointer;color:var(--ink)}
+.chips button.on{background:var(--nav);border-color:var(--nav);color:var(--nav-ink)}
+@media (max-width:999px){.chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}.chips button{flex:none;white-space:nowrap}}
+.pgrid{display:block}
+.ptoc{display:none}
+.psec{display:flex;flex-direction:column;gap:12px;scroll-margin-top:130px}
+.psec>h2{margin:10px 0 0;font-size:18px;font-weight:600;display:flex;align-items:baseline;gap:8px}
+.psec>h2 small{font-family:var(--mono);font-size:12px;font-weight:400;color:var(--ink3)}
+.pc{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden;scroll-margin-top:130px}
+.pc.bad{box-shadow:inset 3px 0 0 #c43a3a}
+.pc.hl{outline:2px solid var(--accent);outline-offset:1px}
+.pch{display:flex;gap:12px;align-items:flex-start;padding:14px 16px 12px;border-bottom:1px solid var(--line)}
+.pch .n{font-family:var(--mono);font-size:12px;color:var(--ink2);border:1px solid var(--line2);border-radius:4px;padding:2px 6px;flex:none;margin-top:2px}
+.pch h3{margin:0;font-size:17px;font-weight:600;line-height:1.3}
+.pch .sub{font-family:var(--mono);font-size:12px;color:var(--ink2);margin-top:3px;line-height:1.5}
+.tagbad{display:inline-block;margin-top:6px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:#b02a2a;background:#fbe3e3;border-radius:4px;padding:2px 7px}
+.pcb{display:flex;flex-direction:column}
+.pcl{padding:12px 16px 14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.pcl .ph{font-weight:600;font-size:14px;margin-top:4px}
+.pcl .ph:first-child{margin-top:0}
+.pcl .pn{font-size:12.5px;color:var(--ink2)}
+.pcr{padding:12px 16px 14px;border-top:1px solid var(--line);background:var(--surface2);display:flex;flex-direction:column;gap:8px}
+.pcr .cap{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
+.dt{display:flex;gap:10px;align-items:flex-start;text-align:left;background:var(--surface);border:1px solid var(--line2);border-radius:6px;padding:8px 10px;cursor:pointer;width:100%;color:var(--ink)}
+.dt:hover{border-color:var(--accent)}
+.dt .bd{flex:none;font-family:var(--mono);font-size:10px;font-weight:600;color:#fff;background:var(--nav);border-radius:3px;padding:2px 4px;margin-top:2px}
+.dt .bd.no{background:var(--ink3)}
+.dt b{display:block;font-size:13px;font-weight:600;line-height:1.3}
+.dt small{display:block;font-size:11.5px;color:var(--ink2);line-height:1.35;margin-top:2px}
+.dt i{font-style:normal;font-family:var(--mono);font-size:11px;color:var(--accent)}
+.preg{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.preg table{width:100%;border-collapse:collapse}
+.preg td{border-top:1px solid var(--line);padding:8px 12px;vertical-align:top;font-size:13.5px}
+.preg tr:first-child td{border-top:0}
+.preg td:first-child{width:38%}
+.preg a{display:block;color:var(--accent-ink);font-size:13px;padding:1px 0;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.pfoot{font-size:12px;color:var(--ink3)}
+.pc mark{background:#ffe27a;color:inherit}
+.dmodal{position:fixed;inset:0;z-index:30;background:rgba(8,16,26,.6);display:flex;align-items:stretch;justify-content:center}
+.dmodal .dw{background:#2b2f33;display:flex;flex-direction:column;width:100%;max-width:1400px;margin:0}
+.dmodal .dh{display:flex;align-items:center;gap:8px;padding:10px 12px;color:#fff;flex-wrap:wrap;padding-top:calc(10px + env(safe-area-inset-top,0px))}
+.dmodal .dh b{flex:1;min-width:120px;font-size:14px}
+.dmodal .dh button{background:transparent;border:1px solid #6b7177;color:#fff;border-radius:6px;padding:7px 12px;font-size:13px;cursor:pointer}
+.dmodal .db{flex:1;overflow:auto;background:#eef0f1;padding:10px}
+.dmodal .pdfbar{color:#333}
+@media (min-width:1000px){
+  .pgh h1{font-size:28px}
+  .pbar{top:60px;flex-direction:row;align-items:center;flex-wrap:wrap}
+  .pbar .search{flex:1;min-width:320px;max-width:none}
+  .pgrid{display:grid;grid-template-columns:230px minmax(0,1fr);gap:28px;align-items:start}
+  .ptoc{display:flex;flex-direction:column;gap:1px;position:sticky;top:130px;max-height:calc(100vh - 150px);overflow:auto;padding-bottom:20px}
+  .ptoc .t{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:12px 0 4px}
+  .ptoc .t:first-child{margin-top:0}
+  .ptoc a{display:flex;gap:8px;font-size:13px;color:var(--ink);text-decoration:none;padding:4px 6px;border-radius:5px;line-height:1.3;cursor:pointer}
+  .ptoc a span{font-family:var(--mono);font-size:11px;color:var(--ink3);min-width:18px;padding-top:1px}
+  .ptoc a:hover{background:var(--surface)}
+  .ptoc a.dim{opacity:.35}
+  .pcb{flex-direction:row}
+  .pcl{flex:1}
+  .pcr{width:250px;flex:none;border-top:0;border-left:1px solid var(--line)}
+  .dmodal{padding:3vh 3vw}
+  .dmodal .dw{border-radius:10px;overflow:hidden}
+}
 /* ---- справочник: общие ---- */
 .req h3 .num:empty{display:none}
 .req h3 .num{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:500;margin-right:4px}
@@ -581,6 +654,9 @@ function restoreY(y){y=y||0;window.scrollTo(0,y);requestAnimationFrame(()=>windo
 function goBack(){S.stack.pop();const cur=S.stack[S.stack.length-1];const y=cur?cur.y:S.rootY[S.tab];if(cur)cur.back=true;render();restoreY(y);}
 function render(){
   document.body.classList.toggle('wide',!!(S.stack.length&&S.stack[S.stack.length-1].v==='matOne'));
+  document.body.classList.toggle('ve',VAR==='e');
+  {const m=document.getElementById('dm');if(m)m.remove();}
+  if(VAR==='e'){const cur=S.stack[S.stack.length-1];if(!cur||cur.v!=='kon'&&cur.v!=='el'){S.pq='';S.psf='';}else if(cur.k!==S.pk){S.pq='';S.psf='';}S.pk=cur&&cur.k;}
   document.body.classList.toggle('bk',VAR==='d'&&!!(S.stack.length&&S.stack[S.stack.length-1].v==='el'));
   {const ot=document.getElementById('otoc');if(ot)ot.innerHTML='';const sh=document.getElementById('sh');if(sh)sh.remove();}
   renderNav();
@@ -589,6 +665,7 @@ function render(){
   if(!D){setTop('Требования ОКК');m.innerHTML=`<div class="empty">Данных пока нет.</div><button class="btn pri" id="up">${I.upload}Загрузить файл</button><button class="btn" id="demo">Открыть пример</button>`;$('up').onclick=pick;$('demo').onclick=loadDemo;return;}
   const v=S.stack[S.stack.length-1];
   if(!v) return ({home:vHome,mat:vMatList,chg:vChanges,docs:vDocs})[S.tab]();
+  if(VAR==='e'&&v.v==='el'){S.stack[S.stack.length-1]={v:'kon',k:v.k,focus:v.focus,back:v.back};return vKonPage(S.stack[S.stack.length-1]);}
   return ({kon:vKon,el:vEl,matOne:vMatOne,doc:vDoc,pdf:vPdf,data:vData,imp:vImport})[v.v](v);
 }
 function row(title,sub,right,attrs){return `<button class="tap" ${attrs}><span class="t"><b>${title}</b>${sub?`<small>${sub}</small>`:''}</span>${right||''}${I.chev}</button>`;}
@@ -645,6 +722,90 @@ function keyVals(rows){
   return out;
 }
 
+
+/* ===== E: одна страница на конструктив ===== */
+const SECN={'Материал':'Материалы и изделия','Устройство':'Работы','Приёмка':'Приёмка и контроль'};
+const isRef=n=>/^(Письмо|СП |ГОСТ|Применяется по письму|Класс —)/.test(n||'');
+function pageModel(k){
+  const A=active().filter(q=>q.kon===k); const els=elList(k); const secs=[];
+  const mk=(title,parts,el)=>{const docs=[];parts.forEach(p=>(p.q.docs||[]).forEach(x=>{const f=docs.find(d=>d.code===x.code);if(f){if(!f.pages.includes(x.page))f.pages.push(x.page);}else docs.push({code:x.code,page:x.page,pages:[x.page]});}));docs.forEach(d=>{d.pages.sort((a,b)=>a-b);d.page=d.pages[0];});
+    const subs=parts.map(p=>p.q.note).filter(n=>n&&!isRef(n)&&/·/.test(n));
+    return {title,parts,docs,el,sub:subs[0]||'',bad:/не допуска|брак/i.test(title),ids:parts.map(p=>p.q.id)};};
+  if(els.length>1){
+    const work=[];
+    for(const e of els){const R=A.filter(q=>q.el===e);
+      if(R.some(q=>norm(q.block)===norm('Приёмка'))){
+        const bl=[...new Set(R.map(q=>q.block))].sort((a,b)=>blockOrder(a)-blockOrder(b));
+        for(const b of bl){const cs=groupCards(R.filter(q=>q.block===b));secs.push({title:norm(b)===norm('Приёмка')?'Дефекты и допуски':(norm(b)===norm('Материал')?e:e+' — '+b.toLowerCase()),cards:cs.map(c=>mk(c[0].mat||c[0].el,c.map(q=>({q,head:''})),e))});}
+      } else {
+        const R2=[...R].sort((a,b)=>blockOrder(a.block)-blockOrder(b.block));
+        work.push(mk(e,R2.map(q=>({q,head:q.mat||''})),e));
+      }
+    }
+    if(work.length) secs.push({title:'Устройство конструктивных элементов',cards:work});
+  } else {
+    const bl=[...new Set(A.map(q=>q.block))].sort((a,b)=>blockOrder(a)-blockOrder(b));
+    for(const b of bl){const cs=groupCards(A.filter(q=>q.block===b));secs.push({title:SECN[b]||b,cards:cs.map(c=>mk(c[0].mat||c[0].el,c.map(q=>({q,head:''})),els[0]))});}
+  }
+  let n=0; secs.forEach((s,i)=>{s.id='s'+i;s.cards.forEach(c=>{n++;c.num=String(n).padStart(2,'0');c.id='pc-'+c.ids[0];});});
+  return secs;
+}
+function docTile(x,small){const d=docBy(x.code);const name=d?(d.type==='Письмо'&&d.date?d.code+' от '+d.date:d.code):x.code;
+  return `<button class="dt" data-doc="${esc(x.code)}" data-page="${x.page}"><span class="bd${hasPdf(d)?'':' no'}">${hasPdf(d)?'PDF':'ТЕКСТ'}</span><span><b>${esc(name)}</b>${d&&d.name?`<small>${esc(d.name)}</small>`:''}${small?'':`<i>стр. ${(x.pages||[x.page]).join(', ')}</i>`}</span></button>`;}
+function vKonPage(v){
+  const k=v.k; const secs=pageModel(k); const A=active().filter(q=>q.kon===k);
+  setTop(k,'',true);
+  const rcIds=new Set(recent().map(r=>r.id));
+  const usedDocs=[];secs.forEach(s=>s.cards.forEach(c=>c.docs.forEach(x=>{if(!usedDocs.includes(x.code))usedDocs.push(x.code);})));
+  let h=`<div class="pg"><div class="pgh"><div class="cr">Конструктив · ${esc(k)}</div><h1>Требования: ${esc(k)}</h1><span class="srcb">Источник: таблица требований (Excel) · ${usedDocs.length} ${plural(usedDocs.length,'документ','документа','документов')} · актуально на ${esc(D.asof||'—')}</span></div>`;
+  h+=`<div class="pbar"><label class="search">${I.search}<input id="pq" type="search" placeholder="Поиск: B30, раковины, F150, Кф, ГОСТ 24547…" value="${esc(S.pq||'')}" autocomplete="off"></label><div class="chips" id="pchips"><button data-sf="" class="${!S.psf?'on':''}">Все</button>${secs.map(s=>`<button data-sf="${s.id}" class="${S.psf===s.id?'on':''}">${esc(s.title)}</button>`).join('')}</div></div>`;
+  h+=`<div class="pgrid"><nav class="ptoc" aria-label="Содержание">${secs.map(s=>`<div class="t">${esc(s.title)}</div>`+s.cards.map(c=>`<a data-to="${c.id}"><span>${c.num}</span>${esc(c.title)}</a>`).join('')).join('')}</nav><div class="pcol" style="display:flex;flex-direction:column;gap:14px;min-width:0">`;
+  h+=secs.map(s=>`<section class="psec" id="${s.id}"><h2>${esc(s.title)} <small>${s.cards.length} поз.</small></h2>`+s.cards.map(c=>{
+    const changed=c.parts.some(p=>p.q.date&&rcIds.has(p.q.id));
+    return `<article class="pc${c.bad?' bad':''}" id="${c.id}"><div class="pch"><span class="n">${c.num}</span><div><h3>${esc(c.title)}</h3>${c.sub?`<div class="sub">${esc(c.sub)}</div>`:''}${c.bad?'<span class="tagbad">НЕ ДОПУСКАЕТСЯ</span>':''}${changed?' <span class="pill p-warn">изменено</span>':''}</div></div><div class="pcb"><div class="pcl">`+
+      c.parts.map(p=>{const nt=p.q.note&&!isRef(p.q.note)&&p.q.note!==c.sub?p.q.note:'';return `<div id="r-${esc(p.q.id)}">${p.head?`<div class="ph">${esc(p.head)}</div>`:''}${kvHtml(p.q.text)}${nt?`<div class="pn">${esc(nt)}</div>`:''}</div>`;}).join('')+
+      `</div><div class="pcr"><span class="cap">Ссылка на документ</span>${c.docs.map(x=>docTile(x)).join('')}</div></div></article>`;}).join('')+`</section>`).join('');
+  // реестр
+  h+=`<section class="psec" id="sreg"><h2>Реестр документов <small>${usedDocs.length}</small></h2><div class="preg"><table>${usedDocs.map(code=>{const d=docBy(code);const cards=[];secs.forEach(s=>s.cards.forEach(c=>{if(c.docs.some(x=>x.code===code))cards.push(c);}));const pg=cards[0].docs.find(x=>x.code===code).page;
+    return `<tr><td>${docTile({code,page:pg},true)}</td><td>${esc(d&&d.text?d.text.slice(0,180)+(d.text.length>180?'…':''):(d&&d.name)||'')}</td><td>${cards.map(c=>`<a data-to="${c.id}">${c.num} ${esc(c.title)}</a>`).join('')}</td></tr>`;}).join('')}</table></div><div class="pfoot">Требования перенесены из таблицы ОКК и сверены с документами. Где есть сомнения — в карточке примечание.</div></section>`;
+  h+=`</div></div></div>`;
+  $('main').innerHTML=h;
+  const goTo=id=>{const t=document.getElementById(id);if(!t)return;if(t.hidden||t.closest('[hidden]')){S.psf='';S.pq='';$('pq').value='';applyF();}const y=t.getBoundingClientRect().top+window.scrollY-(WIDE.matches?140:170);window.scrollTo({top:y,behavior:'smooth'});t.classList.add('hl');setTimeout(()=>t.classList.remove('hl'),1800);};
+  $('main').querySelectorAll('[data-to]').forEach(a=>a.onclick=e=>{e.preventDefault();goTo(a.dataset.to);});
+  $('main').querySelectorAll('.dt').forEach(b=>b.onclick=()=>openModal({doc:b.dataset.doc,page:+b.dataset.page}));
+  const base=new Map();$('main').querySelectorAll('.pc').forEach(c=>base.set(c.id,c.innerHTML));
+  function applyF(){
+    const words=norm(S.pq||'').split(' ').filter(Boolean);
+    secs.forEach(s=>{let vis=0;const sec=$(s.id);
+      s.cards.forEach(c=>{const el=$(c.id);el.innerHTML=base.get(c.id);
+        const txt=norm(el.textContent);const ok=(!S.psf||S.psf===s.id)&&words.every(w=>mw(txt,w));el.hidden=!ok;if(ok)vis++;
+        const a=$('main').querySelector(`.ptoc [data-to="${c.id}"]`);if(a)a.classList.toggle('dim',!ok);
+        if(ok&&words.length) markIn(el.querySelector('.pcl'),words.concat(words.map(w=>SYN[w]).filter(Boolean)));});
+      sec.hidden=!vis;});
+    $('sreg').hidden=!!(S.pq||S.psf);
+    $('main').querySelectorAll('.dt').forEach(b=>b.onclick=()=>openModal({doc:b.dataset.doc,page:+b.dataset.page}));
+    $('main').querySelectorAll('#pchips button').forEach(b=>b.classList.toggle('on',(b.dataset.sf||'')===(S.psf||'')));
+  }
+  $('pq').oninput=()=>{S.pq=$('pq').value;applyF();};
+  $('main').querySelectorAll('#pchips button').forEach(b=>b.onclick=()=>{S.psf=b.dataset.sf;applyF();window.scrollTo({top:0});});
+  if(S.pq||S.psf) applyF();
+  if(v.focus&&!v.back){const el0=document.getElementById('r-'+v.focus);const c=el0&&el0.closest('.pc');if(c)setTimeout(()=>goTo(c.id),60);}
+}
+function markIn(root,words){
+  if(!root)return;const ws=words.filter(w=>w.length>=2).map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));if(!ws.length)return;
+  const re=new RegExp('('+ws.join('|')+')','gi');const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);const ns=[];while(tw.nextNode())ns.push(tw.currentNode);
+  ns.forEach(n=>{const t=n.nodeValue;if(!re.test(t))return;re.lastIndex=0;const sp=document.createElement('span');sp.innerHTML=esc(t).replace(re,'<mark>$1</mark>');n.replaceWith(sp);});
+}
+let modalTok=0;
+function openModal(v){
+  const d=docBy(v.doc);const my=++modalTok;const old=$('dm');if(old)old.remove();
+  document.body.insertAdjacentHTML('beforeend',`<div class="dmodal" id="dm"><div class="dw"><div class="dh"><b>${esc(d?d.code:v.doc)}</b>${hasPdf(d)?'<button id="dmo">Открыть PDF</button>':''}<button id="dmx">Закрыть</button></div><div class="db" id="dmb"></div></div></div>`);
+  const close=()=>{modalTok++;const m=$('dm');if(m)m.remove();document.removeEventListener('keydown',esck);};
+  const esck=e=>{if(e.key==='Escape')close();};document.addEventListener('keydown',esck);
+  $('dmx').onclick=close;$('dm').onclick=e=>{if(e.target.id==='dm')close();};
+  if($('dmo'))$('dmo').onclick=async()=>{const b=await get('pdf',d.file.toLowerCase());const u=URL.createObjectURL(new Blob([b],{type:'application/pdf'}));window.open(u+'#page='+v.page,'_blank');};
+  pdfInto($('dmb'),v,()=>my===modalTok);
+}
 /* ===== справочник: общие функции ===== */
 const FAV=new Set((()=>{try{return JSON.parse(localStorage.getItem('okk-fav')||'[]')}catch(e){return []}})());
 let REC=(()=>{try{return JSON.parse(localStorage.getItem('okk-rec')||'[]')}catch(e){return []}})();
@@ -735,6 +896,7 @@ function navTreeD(){
   return `<div class="navtree"><input id="ntf" type="search" placeholder="Фильтр разделов" value="${esc(S.ntf||'')}">${konList().filter(k=>!S.ntf||norm(k+' '+elList(k).join(' ')).includes(norm(S.ntf))).map(k=>{const es=elList(k);const on=cur&&cur.k===k;return `<button class="k${on&&es.length===1?' on':''}" data-gk="${esc(k)}" data-ge="${esc(es.length===1?es[0]:'')}"><span>${numOf(k)}</span>${esc(k)}</button>`+(es.length>1?es.map(e=>`<button class="e${cur&&cur.e===e&&cur.k===k?' on':''}" data-gk="${esc(k)}" data-ge="${esc(e)}"><span>${numOf(k,e)}</span>${esc(e)}</button>`).join(''):'');}).join('')}</div>`;
 }
 function vKon(v){
+  if(VAR==='e') return vKonPage(v);
   const A=active().filter(q=>q.kon===v.k); const els=[...new Set(A.map(q=>q.el))];
   if(els.length===1){S.stack[S.stack.length-1]={v:'el',k:v.k,e:els[0]};return render();}
   setTop(v.k,'',true);
@@ -1044,7 +1206,7 @@ function openSide(v){
   pdfInto($('sb'),v,()=>my===sideTok);
 }
 function closeSide(){setTimeout(alignSoon,0);sideTok++;const sd=$('side');sd.hidden=true;sd.innerHTML='';document.body.classList.remove('side-open');}
-function openDoc(v){if(WIDE.matches) openSide(v); else push({v:'pdf',doc:v.doc,page:v.page});}
+function openDoc(v){if(VAR==='e') return openModal(v); if(WIDE.matches) openSide(v); else push({v:'pdf',doc:v.doc,page:v.page});}
 async function pdfInto(m,v,alive){
   const d=docBy(v.doc);
   if(!hasPdf(d)){m.innerHTML=`<div class="msg m-warn">PDF для «${esc(v.doc)}» не загружен. На листе «Документы» указан файл «${esc(d&&d.file||'—')}».</div>${d&&d.text?`<div class="card doctext">${esc(d.text)}</div>`:''}`;return;}

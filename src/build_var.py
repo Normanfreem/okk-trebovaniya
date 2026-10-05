@@ -2,8 +2,8 @@ import os, shutil, re
 src = open('pwa/index.html').read()
 reg = "<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}</script>"
 assert reg in src
-names = {'c': 'Справочник ОКК — вариант 1', 'd': 'Справочник ОКК — вариант 2'}
-for v in 'cd':
+names = {'e': 'Справочник ОКК — вариант 3'}
+for v in 'e':
     s = src.replace(reg, '')
     s = s.replace('<title>Требования ОКК</title>', f'<title>{names[v]}</title>', 1)
     s = s.replace('<link rel="manifest" href="manifest.webmanifest">', '', 1)
