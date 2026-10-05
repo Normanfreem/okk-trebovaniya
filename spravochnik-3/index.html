@@ -237,11 +237,15 @@ body.ve main{max-width:none}
 .pch .sub{font-family:var(--mono);font-size:12px;color:var(--ink2);margin-top:3px;line-height:1.5}
 .tagbad{display:inline-block;margin-top:6px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:#b02a2a;background:#fbe3e3;border-radius:4px;padding:2px 7px}
 .pcb{display:flex;flex-direction:column}
+.prow{display:flex;flex-direction:column;scroll-margin-top:140px}
+.prow+.prow{border-top:1px dashed var(--line2)}
+.dt.cp small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .pcl{padding:12px 16px 14px;display:flex;flex-direction:column;gap:8px;min-width:0}
 .pcl .ph{font-weight:600;font-size:14px;margin-top:4px}
 .pcl .ph:first-child{margin-top:0}
 .pcl .pn{font-size:12.5px;color:var(--ink2)}
 .pcr{padding:12px 16px 14px;border-top:1px solid var(--line);background:var(--surface2);display:flex;flex-direction:column;gap:8px}
+.pcr:empty{display:none}
 .pcr .cap{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
 .dt{display:flex;gap:10px;align-items:flex-start;text-align:left;background:var(--surface);border:1px solid var(--line2);border-radius:6px;padding:8px 10px;cursor:pointer;width:100%;color:var(--ink)}
 .dt:hover{border-color:var(--accent)}
@@ -277,7 +281,7 @@ body.ve main{max-width:none}
   .ptoc a span{font-family:var(--mono);font-size:11px;color:var(--ink3);min-width:18px;padding-top:1px}
   .ptoc a:hover{background:var(--surface)}
   .ptoc a.dim{opacity:.35}
-  .pcb{flex-direction:row}
+  .prow{flex-direction:row}
   .pcl{flex:1}
   .pcr{width:250px;flex:none;border-top:0;border-left:1px solid var(--line)}
   .dmodal{padding:3vh 3vw}
@@ -821,8 +825,8 @@ function pageModel(k){
   let n=0; secs.forEach((s,i)=>{s.id='s'+i;s.cards.forEach(c=>{n++;c.num=String(n).padStart(2,'0');c.id='pc-'+c.ids[0];});});
   return secs;
 }
-function docTile(x,small){const d=docBy(x.code);const name=d?(d.type==='Письмо'&&d.date?d.code+' от '+d.date:d.code):x.code;
-  return `<button class="dt" data-doc="${esc(x.code)}" data-page="${x.page}"><span class="bd${hasPdf(d)?'':' no'}">${hasPdf(d)?'PDF':'ТЕКСТ'}</span><span><b>${esc(name)}</b>${d&&d.name?`<small>${esc(d.name)}</small>`:''}${small?'':`<i>стр. ${(x.pages||[x.page]).join(', ')}</i>`}</span></button>`;}
+function docTile(x,small,compact){const d=docBy(x.code);const name=d?(d.type==='Письмо'&&d.date?d.code+' от '+d.date:d.code):x.code;
+  return `<button class="dt${compact?' cp':''}" data-doc="${esc(x.code)}" data-page="${x.page}"><span class="bd${hasPdf(d)?'':' no'}">${hasPdf(d)?'PDF':'ТЕКСТ'}</span><span><b>${esc(name)}</b>${d&&d.name?`<small>${esc(d.name)}</small>`:''}${small?'':`<i>стр. ${(x.pages||[x.page]).join(', ')}</i>`}</span></button>`;}
 function vKonPage(v){
   const k=v.k; const secs=pageModel(k); const A=active().filter(q=>q.kon===k);
   setTop(k,'',true);
@@ -833,9 +837,10 @@ function vKonPage(v){
   h+=`<div class="pgrid"><nav class="ptoc" aria-label="Содержание">${secs.map(s=>`<div class="t">${esc(s.title)}</div>`+s.cards.map(c=>`<a data-to="${c.id}"><span>${c.num}</span>${esc(c.title)}</a>`).join('')).join('')}</nav><div class="pcol" style="display:flex;flex-direction:column;gap:14px;min-width:0">`;
   h+=secs.map(s=>`<section class="psec" id="${s.id}"><h2>${esc(s.title)} <small>${s.cards.length} поз.</small></h2>`+s.cards.map(c=>{
     const changed=c.parts.some(p=>p.q.date&&rcIds.has(p.q.id));
-    return `<article class="pc${c.bad?' bad':''}" id="${c.id}"><div class="pch"><span class="n">${c.num}</span><div><h3>${esc(c.title)}</h3>${c.sub?`<div class="sub">${esc(c.sub)}</div>`:''}${c.bad?'<span class="tagbad">НЕ ДОПУСКАЕТСЯ</span>':''}${changed?' <span class="pill p-warn">изменено</span>':''}</div></div><div class="pcb"><div class="pcl">`+
-      c.parts.map(p=>{const nt=p.q.note&&!isRef(p.q.note)&&p.q.note!==c.sub?p.q.note:'';return `<div id="r-${esc(p.q.id)}">${p.head?`<div class="ph">${esc(p.head)}</div>`:''}${kvHtml(p.q.text)}${nt?`<div class="pn">${esc(nt)}</div>`:''}</div>`;}).join('')+
-      `</div><div class="pcr"><span class="cap">Ссылка на документ</span>${c.docs.map(x=>docTile(x)).join('')}</div></div></article>`;}).join('')+`</section>`).join('');
+    return `<article class="pc${c.bad?' bad':''}" id="${c.id}"><div class="pch"><span class="n">${c.num}</span><div><h3>${esc(c.title)}</h3>${c.sub?`<div class="sub">${esc(c.sub)}</div>`:''}${c.bad?'<span class="tagbad">НЕ ДОПУСКАЕТСЯ</span>':''}${changed?' <span class="pill p-warn">изменено</span>':''}</div></div><div class="pcb">`+
+      c.parts.map((p,pi)=>{const nt=p.q.note&&!isRef(p.q.note)&&p.q.note!==c.sub?p.q.note:'';const ds=[];(p.q.docs||[]).forEach(x=>{const f=ds.find(d=>d.code===x.code);if(f){if(!f.pages.includes(x.page))f.pages.push(x.page);}else ds.push({code:x.code,page:x.page,pages:[x.page]});});
+        return `<div class="prow" id="r-${esc(p.q.id)}"><div class="pcl">${p.head?`<div class="ph">${esc(p.head)}</div>`:''}${kvHtml(p.q.text)}${nt?`<div class="pn">${esc(nt)}</div>`:''}</div><div class="pcr">${pi===0?'<span class="cap">Ссылка на документ</span>':''}${ds.map(x=>docTile(x,false,true)).join('')}</div></div>`;}).join('')+
+      `</div></div></article>`;}).join('')+`</section>`).join('');
   // реестр
   h+=`<section class="psec" id="sreg"><h2>Реестр документов <small>${usedDocs.length}</small></h2><div class="preg"><table>${usedDocs.map(code=>{const d=docBy(code);const cards=[];secs.forEach(s=>s.cards.forEach(c=>{if(c.docs.some(x=>x.code===code))cards.push(c);}));const pg=cards[0].docs.find(x=>x.code===code).page;
     return `<tr><td>${docTile({code,page:pg},true)}</td><td>${esc(d&&d.text?d.text.slice(0,180)+(d.text.length>180?'…':''):(d&&d.name)||'')}</td><td>${cards.map(c=>`<a data-to="${c.id}">${c.num} ${esc(c.title)}</a>`).join('')}</td></tr>`;}).join('')}</table></div><div class="pfoot">Требования перенесены из таблицы ОКК и сверены с документами. Где есть сомнения — в карточке примечание.</div></section>`;
@@ -851,7 +856,7 @@ function vKonPage(v){
       s.cards.forEach(c=>{const el=$(c.id);el.innerHTML=base.get(c.id);
         const txt=norm(el.textContent);const ok=(!S.psf||S.psf===s.id)&&words.every(w=>mw(txt,w));el.hidden=!ok;if(ok)vis++;
         const a=$('main').querySelector(`.ptoc [data-to="${c.id}"]`);if(a)a.classList.toggle('dim',!ok);
-        if(ok&&words.length) markIn(el.querySelector('.pcl'),words.concat(words.map(w=>SYN[w]).filter(Boolean)));});
+        if(ok&&words.length) el.querySelectorAll('.pcl').forEach(pc=>markIn(pc,words.concat(words.map(w=>SYN[w]).filter(Boolean))));});
       sec.hidden=!vis;});
     $('sreg').hidden=!!(S.pq||S.psf);
     $('main').querySelectorAll('.dt').forEach(b=>b.onclick=()=>openModal({doc:b.dataset.doc,page:+b.dataset.page}));
