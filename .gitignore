@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.swver
+app.v2.src.html
+# никаких данных в репозитории
+*.zip
+*.xlsx
+*.pdf
+*.sqlite*
+okk-data/

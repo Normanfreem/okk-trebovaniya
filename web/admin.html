@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Панель администратора ОКК</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#eef1f0;--surface:#fff;--surface2:#f6f8f7;--ink:#172026;--ink2:#4c5a61;--ink3:#7d8a90;--line:#d7dedc;--line2:#bcc6c4;--nav:#1d3a5c;--accent:#1d5a9c;--accent-bg:#e3eef9;--ok:#1f6b3f;--ok-bg:#e1f2e7;--bad:#a02929;--bad-bg:#fbe5e5;--warn:#8a5200;--warn-bg:#fff0cf;
+--mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;--sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12181c;--surface:#1a2227;--surface2:#212b31;--ink:#e6ecee;--ink2:#a9b6bc;--ink3:#7b8a91;--line:#2c383f;--line2:#3b4952;--nav:#0e2236;--accent:#7db3ea;--accent-bg:#1c3148;--ok:#86d3a4;--ok-bg:#15301f;--bad:#f09a9a;--bad-bg:#3a1a1a;--warn:#f2c46d;--warn-bg:#3a2c10}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14.5px/1.45 var(--sans)}
+button,input,select,textarea{font:inherit;color:inherit}
+header{background:var(--nav);color:#fff;padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+header b{font-size:17px;flex:1}
+header a,header button{color:#fff;background:transparent;border:1px solid rgba(255,255,255,.4);border-radius:8px;padding:6px 12px;text-decoration:none;cursor:pointer;font-size:13px}
+nav{display:flex;gap:4px;padding:10px 20px 0;flex-wrap:wrap;border-bottom:1px solid var(--line);background:var(--surface)}
+nav button{border:0;background:none;padding:10px 14px;border-bottom:2px solid transparent;cursor:pointer;color:var(--ink2);font-weight:500}
+nav button.on{color:var(--accent);border-bottom-color:var(--accent)}
+nav .cnt{background:var(--warn-bg);color:var(--warn);border-radius:8px;padding:0 6px;font-size:12px;margin-left:4px}
+main{padding:18px 20px 60px;max-width:1300px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+h2{margin:0;font-size:18px}
+.note{color:var(--ink2);font-size:13px}
+table{width:100%;border-collapse:collapse;background:var(--surface)}
+th{text-align:left;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink2);background:var(--surface2);padding:8px 10px;border-bottom:1px solid var(--line2);position:sticky;top:0}
+td{padding:8px 10px;border-top:1px solid var(--line);vertical-align:top}
+.tw{border:1px solid var(--line);border-radius:10px;overflow:auto;max-height:70vh}
+.mono{font-family:var(--mono);font-size:12.5px}
+.btn{border:1px solid var(--line2);background:var(--surface);border-radius:8px;padding:7px 12px;cursor:pointer}
+.btn.pri{background:var(--nav);border-color:var(--nav);color:#fff}
+.btn.sm{padding:4px 9px;font-size:13px}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+input[type=text],input[type=password],input[type=number],input[type=date],input[type=search],select,textarea{border:1px solid var(--line2);border-radius:8px;padding:7px 10px;background:var(--surface)}
+.pill{display:inline-block;border-radius:6px;padding:2px 7px;font-size:12px}
+.p-ok{background:var(--ok-bg);color:var(--ok)}.p-bad{background:var(--bad-bg);color:var(--bad)}.p-warn{background:var(--warn-bg);color:var(--warn)}.p-n{background:var(--surface2);color:var(--ink2);border:1px solid var(--line)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(420px,100%),1fr));gap:14px}
+.chk{display:flex;gap:8px;align-items:flex-start;padding:4px 0}
+.modal{position:fixed;inset:0;background:rgba(8,16,26,.55);display:flex;align-items:flex-start;justify-content:center;padding:6vh 12px;z-index:20;overflow:auto}
+.modal .card{width:100%;max-width:560px;display:flex;flex-direction:column;gap:10px}
+.f{display:flex;flex-direction:column;gap:4px}.f label{font-size:12.5px;color:var(--ink2)}
+.msg{padding:8px 10px;border-radius:8px;font-size:13px}.m-err{background:var(--bad-bg);color:var(--bad)}.m-ok{background:var(--ok-bg);color:var(--ok)}
+.yes{color:var(--ok);font-weight:600}.no{color:var(--ink3)}
+.login{max-width:380px;margin:12vh auto;display:flex;flex-direction:column;gap:10px}
+</style></head><body>
+<div id="app"></div>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let A=JSON.parse(localStorage.getItem('okk-adm')||'null'); let ST=null; let TAB=localStorage.getItem('okk-adm-tab')||'users';
+const ACT={login:'Вход',login_fail:'Неудачный вход',login_blocked:'Вход заблокирован',logout:'Выход',pack:'Загрузил данные',app_open:'Открыл приложение',open_kon:'Открыл конструктив',open_doc:'Открыл документ',open_mat:'Открыл материал',search:'Поиск',export:'Выгрузил Excel',suggest:'Отправил предложение',suggest_create:'Создал предложение',admin_user_add:'Админ: добавил пользователя',admin_user_edit:'Админ: изменил пользователя',admin_level_save:'Админ: сохранил уровень',admin_level_delete:'Админ: удалил уровень',admin_upload:'Админ: загрузил данные',admin_activate:'Админ: сменил версию данных',admin_suggestion:'Админ: решение по предложению'};
+async function api(p,o={}){const h={};if(A)h.Authorization='Bearer '+A.token;if(o.json!==undefined){h['Content-Type']='application/json';o.body=JSON.stringify(o.json);}
+  const r=await fetch(p,{method:o.method||(o.body?'POST':'GET'),headers:h,body:o.body});
+  if(r.status===401){logout();throw new Error('Войдите снова');}
+  if(!r.ok){let t='Ошибка '+r.status;try{t=(await r.json()).detail||t}catch(e){}throw new Error(t);}
+  return o.raw?r:r.json();}
+function logout(){localStorage.removeItem('okk-adm');A=null;render();}
+function vLogin(err){
+  $('app').innerHTML=`<form class="card login" id="lf"><h2>Панель администратора</h2><input id="lg" type="text" placeholder="Логин" autocomplete="username"><input id="pw" type="password" placeholder="Пароль" autocomplete="current-password">${err?`<div class="msg m-err">${esc(err)}</div>`:''}<button class="btn pri">Войти</button></form>`;
+  $('lf').onsubmit=async e=>{e.preventDefault();try{const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({login:$('lg').value,password:$('pw').value,device:'Панель администратора'})});
+    const j=await r.json();if(!r.ok)return vLogin(j.detail||'Ошибка');if(!j.user.is_admin)return vLogin('Это не учётная запись администратора');
+    A={token:j.token,user:j.user,dk:j.dk};localStorage.setItem('okk-adm',JSON.stringify(A));render();}catch(x){vLogin('Нет связи с сервером');}};
+}
+async function render(){
+  if(!A) return vLogin();
+  try{ST=await api('/api/admin/state');}catch(e){return vLogin(e.message);}
+  const tabs=[['users','Пользователи'],['levels','Уровни доступа'],['matrix','Кто что видит'],['log','Журнал'],['sug','Предложения'],['data','Данные']];
+  $('app').innerHTML=`<header><b>Панель администратора ОКК</b><span>${esc(A.user.name||A.user.login)}</span><a href="/">Открыть приложение</a><button id="lo">Выйти</button></header>
+  <nav>${tabs.map(([k,n])=>`<button data-t="${k}" class="${TAB===k?'on':''}">${n}${k==='sug'&&ST.new_suggestions?`<span class="cnt">${ST.new_suggestions}</span>`:''}</button>`).join('')}</nav><main id="m"></main>`;
+  $('lo').onclick=logout;
+  document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{TAB=b.dataset.t;localStorage.setItem('okk-adm-tab',TAB);render();});
+  ({users:vUsers,levels:vLevels,matrix:vMatrix,log:vLog,sug:vSug,data:vData})[TAB]();
+}
+const lvName=id=>(ST.levels.find(l=>l.id===id)||{}).name||'—';
+const dt=s=>s?new Date(s).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+function vUsers(){
+  $('m').innerHTML=`<div class="row"><h2 style="flex:1">Пользователи · ${ST.users.length}</h2><button class="btn pri" id="add">Добавить пользователя</button></div>
+  <div class="tw"><table><thead><tr><th>Логин</th><th>ФИО</th><th>Уровень</th><th>Статус</th><th>Последняя активность</th><th>Без сети, дн.</th><th></th></tr></thead><tbody>${ST.users.map(u=>`<tr><td class="mono">${esc(u.login)}</td><td>${esc(u.name)}${u.note?`<div class="note">${esc(u.note)}</div>`:''}</td><td>${u.is_admin?'<span class="pill p-warn">администратор</span> ':''}${esc(lvName(u.level_id))}</td><td>${u.active?'<span class="pill p-ok">активен</span>':'<span class="pill p-bad">отключён</span>'}</td><td>${dt(u.last_seen)}</td><td>${u.offline_days}</td>
+  <td><div class="row"><button class="btn sm" data-e="${u.id}">Изменить</button><button class="btn sm" data-v="${u.id}">Смотреть глазами</button><button class="btn sm" data-l="${u.id}">Журнал</button></div></td></tr>`).join('')}</tbody></table></div>`;
+  $('add').onclick=()=>userForm(null);
+  document.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>userForm(ST.users.find(u=>u.id==b.dataset.e)));
+  document.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{const u=ST.users.find(x=>x.id==b.dataset.v);window.open('/?as='+u.id+'&name='+encodeURIComponent(u.name||u.login),'_blank');});
+  document.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{TAB='log';LF.user_id=b.dataset.l;render();});
+}
+function userForm(u){
+  const d=document.createElement('div');d.className='modal';
+  d.innerHTML=`<form class="card" id="uf"><h2>${u?'Изменить: '+esc(u.login):'Новый пользователь'}</h2>
+  <div class="f"><label>Логин (латиница, без пробелов)</label><input type="text" id="u_login" value="${esc(u?u.login:'')}" ${u?'disabled':''} autocomplete="off"></div>
+  <div class="f"><label>ФИО</label><input type="text" id="u_name" value="${esc(u?u.name:'')}"></div>
+  <div class="f"><label>${u?'Новый пароль (оставьте пустым, чтобы не менять)':'Пароль (не меньше 8 символов)'}</label><div class="row"><input type="text" id="u_pw" style="flex:1" autocomplete="new-password"><button type="button" class="btn sm" id="gen">Придумать</button></div></div>
+  <div class="f"><label>Уровень доступа</label><select id="u_lv">${ST.levels.map(l=>`<option value="${l.id}" ${u&&u.level_id===l.id?'selected':''}>${esc(l.name)}</option>`).join('')}</select></div>
+  <div class="f"><label>Сколько дней приложение работает без проверки на сервере</label><input type="number" id="u_days" min="1" max="365" value="${u?u.offline_days:35}"></div>
+  <div class="f"><label>Заметка (должность, участок)</label><input type="text" id="u_note" value="${esc(u?u.note:'')}"></div>
+  <label class="chk"><input type="checkbox" id="u_act" ${!u||u.active?'checked':''}> Доступ включён</label>
+  <label class="chk"><input type="checkbox" id="u_adm" ${u&&u.is_admin?'checked':''}> Администратор (видит всё, журнал и эту панель)</label>
+  <div id="uerr" class="msg m-err" hidden></div>
+  <div class="row"><button class="btn pri">Сохранить</button><button type="button" class="btn" id="cx">Отмена</button></div></form>`;
+  document.body.appendChild(d);
+  $('cx').onclick=()=>d.remove();
+  $('gen').onclick=()=>{const a='abcdefghjkmnpqrstuvwxyz23456789';let p='';const r=crypto.getRandomValues(new Uint32Array(10));r.forEach(x=>p+=a[x%a.length]);$('u_pw').value=p;};
+  $('uf').onsubmit=async e=>{e.preventDefault();const pw=$('u_pw').value.trim();
+    if(!u&&pw.length<8||u&&pw&&pw.length<8){$('uerr').textContent='Пароль не короче 8 символов';$('uerr').hidden=false;return;}
+    try{await api('/api/admin/user',{json:{id:u?u.id:undefined,login:$('u_login').value,name:$('u_name').value,password:pw||undefined,level_id:+$('u_lv').value,offline_days:+$('u_days').value,note:$('u_note').value,active:$('u_act').checked,is_admin:$('u_adm').checked}});
+      d.remove();if(pw)alert('Сохранено. Передайте человеку:\nЛогин: '+(u?u.login:$('u_login').value.trim().toLowerCase())+'\nПароль: '+pw);render();}catch(x){$('uerr').textContent=x.message;$('uerr').hidden=false;}};
+}
+function vLevels(){
+  const kons=ST.kons;
+  const one=l=>{const p=l?l.perms:{kons:[],pdf:true,export:false,suggest:false};const all=p.kons.includes('*');
+    return `<form class="card lvf" data-id="${l?l.id:''}"><div class="f"><label>Название уровня</label><input type="text" name="name" value="${esc(l?l.name:'')}" placeholder="Например: Мастер участка"></div>
+    <div class="note" style="margin-top:6px">Что видит:</div>
+    <label class="chk"><input type="checkbox" name="all" ${all?'checked':''}> <b>Все конструктивы</b>&nbsp;<span class="note">(в том числе те, что появятся позже)</span></label>
+    <div class="kl" ${all?'style="opacity:.45"':''}>${kons.map(k=>`<label class="chk"><input type="checkbox" name="k" value="${esc(k)}" ${all||p.kons.includes(k)?'checked':''} ${all?'disabled':''}> ${esc(k)}</label>`).join('')}</div>
+    <div class="note" style="margin-top:6px">Что может:</div>
+    <label class="chk"><input type="checkbox" name="pdf" ${p.pdf?'checked':''}> Открывать PDF документов</label>
+    <label class="chk"><input type="checkbox" name="export" ${p.export?'checked':''}> Выгружать таблицы материалов в Excel</label>
+    <label class="chk"><input type="checkbox" name="suggest" ${p.suggest?'checked':''}> Предлагать изменения (приходят вам на утверждение)</label>
+    <div class="row" style="margin-top:6px"><button class="btn pri">Сохранить</button>${l?`<button type="button" class="btn danger" data-del="${l.id}">Удалить</button><span class="note">Назначен: ${ST.users.filter(u=>u.level_id===l.id).length} чел.</span>`:''}</div><div class="msg" hidden></div></form>`;};
+  $('m').innerHTML=`<div class="row"><h2 style="flex:1">Уровни доступа</h2></div><div class="note">Уровень — набор прав. Человеку назначается один уровень. Изменения применяются у людей при следующей проверке на сервере (как только телефон увидит интернет).</div><div class="grid2">${ST.levels.map(one).join('')}${one(null).replace('<form class="card lvf"','<form class="card lvf" style="border-style:dashed"').replace('placeholder="Например: Мастер участка"','placeholder="Новый уровень"')}</div>`;
+  document.querySelectorAll('.lvf').forEach(f=>{
+    f.elements.all.onchange=()=>{f.querySelectorAll('[name=k]').forEach(c=>{c.disabled=f.elements.all.checked;if(f.elements.all.checked)c.checked=true;});f.querySelector('.kl').style.opacity=f.elements.all.checked?.45:1;};
+    f.onsubmit=async e=>{e.preventDefault();const m=f.querySelector('.msg');
+      const perms={kons:f.elements.all.checked?['*']:[...f.querySelectorAll('[name=k]:checked')].map(c=>c.value),pdf:f.elements.pdf.checked,export:f.elements.export.checked,suggest:f.elements.suggest.checked};
+      try{await api('/api/admin/level',{json:{id:f.dataset.id?+f.dataset.id:undefined,name:f.elements.name.value,perms}});render();}catch(x){m.className='msg m-err';m.textContent=x.message;m.hidden=false;}};
+    const del=f.querySelector('[data-del]');if(del)del.onclick=async()=>{if(!confirm('Удалить уровень?'))return;try{await api('/api/admin/level',{json:{id:+del.dataset.del,delete:true}});render();}catch(x){alert(x.message);}};
+  });
+}
+function vMatrix(){
+  const kons=ST.kons;
+  const sees=(u,k)=>{if(u.is_admin)return true;const l=ST.levels.find(x=>x.id===u.level_id);if(!l)return false;return l.perms.kons.includes('*')||l.perms.kons.includes(k);};
+  const fl=(u,f)=>{if(u.is_admin)return true;const l=ST.levels.find(x=>x.id===u.level_id);return !!(l&&l.perms[f]);};
+  $('m').innerHTML=`<h2>Кто что видит</h2><div class="note">Отключённые пользователи показаны серым. Чтобы поменять — вкладка «Уровни доступа» или «Пользователи».</div>
+  <div class="tw"><table><thead><tr><th>Пользователь</th><th>Уровень</th>${kons.map(k=>`<th style="text-transform:none;letter-spacing:0;min-width:90px">${esc(k)}</th>`).join('')}<th>PDF</th><th>Excel</th><th>Предлож.</th></tr></thead>
+  <tbody>${ST.users.map(u=>`<tr style="${u.active?'':'opacity:.45'}"><td><b>${esc(u.name||u.login)}</b><div class="note mono">${esc(u.login)}</div></td><td>${u.is_admin?'администратор':esc(lvName(u.level_id))}</td>${kons.map(k=>`<td>${sees(u,k)?'<span class="yes">✓</span>':'<span class="no">—</span>'}</td>`).join('')}${['pdf','export','suggest'].map(f=>`<td>${fl(u,f)?'<span class="yes">✓</span>':'<span class="no">—</span>'}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+const LF={user_id:'',d_from:'',d_to:'',type:'',q:''};
+async function vLog(){
+  $('m').innerHTML=`<h2>Журнал посещений и действий</h2><div class="card row">
+  <select id="fu"><option value="">Все пользователи</option>${ST.users.map(u=>`<option value="${u.id}" ${LF.user_id==u.id?'selected':''}>${esc(u.name||u.login)}</option>`).join('')}</select>
+  <label class="note">с <input type="date" id="ff" value="${LF.d_from}"></label><label class="note">по <input type="date" id="ft" value="${LF.d_to}"></label>
+  <select id="fy"><option value="">Все действия</option>${Object.entries(ACT).map(([k,n])=>`<option value="${k}" ${LF.type===k?'selected':''}>${n}</option>`).join('')}</select>
+  <input type="search" id="fq" placeholder="Текст: конструктив, документ, запрос…" value="${esc(LF.q)}" style="min-width:220px;flex:1">
+  <button class="btn" id="fcsv">Скачать (Excel/CSV)</button></div><div id="lt" class="note">Загружаю…</div>`;
+  const go=async()=>{LF.user_id=$('fu').value;LF.d_from=$('ff').value;LF.d_to=$('ft').value;LF.type=$('fy').value;LF.q=$('fq').value;
+    const qs=new URLSearchParams(Object.entries(LF).filter(([k,v])=>v));const rows=await api('/api/admin/events?'+qs);
+    $('lt').innerHTML=`<div class="note" style="margin-bottom:6px">Показано: ${rows.length}${rows.length>=500?' (последние 500 — сузьте фильтр или скачайте файл)':''}</div><div class="tw"><table><thead><tr><th>Время</th><th>Кто</th><th>Действие</th><th>Подробности</th><th>Устройство</th><th>IP</th></tr></thead><tbody>${rows.map(r=>{let d={};try{d=JSON.parse(r.data||'{}')}catch(e){}const det=Object.entries(d).map(([k,v])=>`${esc(k)}: ${esc(typeof v==='object'?JSON.stringify(v):v)}`).join(' · ');
+      return `<tr><td class="mono">${dt(r.ts)}${r.offline?' <span class="pill p-warn">офлайн</span>':''}</td><td>${esc(r.login||'—')}</td><td>${esc(ACT[r.type]||r.type)}</td><td>${det}</td><td class="note">${esc(r.device||'')}</td><td class="mono note">${esc(r.ip||'')}</td></tr>`;}).join('')}</tbody></table></div>`;};
+  ['fu','ff','ft','fy'].forEach(i=>$(i).onchange=go);let t;$('fq').oninput=()=>{clearTimeout(t);t=setTimeout(go,400);};
+  $('fcsv').onclick=async()=>{const qs=new URLSearchParams(Object.entries(LF).filter(([k,v])=>v));const r=await api('/api/admin/events.csv?'+qs,{raw:true});const b=await r.blob();const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='Журнал_ОКК.csv';a.click();};
+  go();
+}
+async function vSug(){
+  const rows=await api('/api/admin/suggestions');
+  const stp={new:'<span class="pill p-warn">новое</span>',accepted:'<span class="pill p-ok">принято</span>',rejected:'<span class="pill p-bad">отклонено</span>'};
+  $('m').innerHTML=`<h2>Предложения изменений</h2><div class="note">Принятые предложения вносите в Excel и загружайте новую версию данных во вкладке «Данные».</div>${rows.length?rows.map(s=>`<div class="card"><div class="row"><b style="flex:1">${esc(s.kon)} › ${esc(s.card)}</b>${stp[s.status]||''}</div><div class="note">${esc(s.login)} · ${dt(s.ts)}</div><div style="white-space:pre-wrap;margin:8px 0">${esc(s.text)}</div>
+  <div class="row"><input type="text" placeholder="Комментарий (необязательно)" value="${esc(s.note)}" id="n${s.id}" style="flex:1"><button class="btn sm" data-s="accepted" data-id="${s.id}">Принять</button><button class="btn sm" data-s="rejected" data-id="${s.id}">Отклонить</button>${s.status!=='new'?`<button class="btn sm" data-s="new" data-id="${s.id}">Вернуть в новые</button>`:''}</div></div>`).join(''):'<div class="card note">Предложений пока нет.</div>'}`;
+  document.querySelectorAll('[data-s]').forEach(b=>b.onclick=async()=>{await api('/api/admin/suggestion',{json:{id:+b.dataset.id,status:b.dataset.s,note:$('n'+b.dataset.id).value}});render();});
+}
+function vData(){
+  const v=ST.versions.find(x=>x.active);
+  $('m').innerHTML=`<h2>Данные</h2><div class="card"><div>Сейчас у всех: <b>${v?'версия от '+esc(v.asof||v.ts.slice(0,10)):'данных нет'}</b>${v?` · ${esc(v.fname||'')} · загрузил ${esc(v.by_login||'')} ${dt(v.ts)}`:''}</div>
+  <div class="note" style="margin:6px 0 10px">Загрузите архив .zip: Excel «Требования_ОКК.xlsx» и папка «Документы» с PDF — как раньше. Каждый получит только свою часть по уровню доступа при следующей проверке.</div>
+  <div class="row"><input type="file" id="zf" accept=".zip"><button class="btn pri" id="up">Загрузить и опубликовать</button></div><div id="um" class="msg" hidden></div></div>
+  <h2 style="margin-top:8px">История версий</h2><div class="tw"><table><thead><tr><th>№</th><th>Загружено</th><th>Актуально на</th><th>Файл</th><th>Размер</th><th></th></tr></thead><tbody>${ST.versions.map(x=>`<tr><td class="mono">${x.id}</td><td>${dt(x.ts)} · ${esc(x.by_login||'')}</td><td>${esc(x.asof||'')}</td><td>${esc(x.fname||'')}</td><td class="mono">${(x.size/1048576).toFixed(1)} МБ</td><td>${x.active?'<span class="pill p-ok">действует</span>':`<button class="btn sm" data-a="${x.id}">Вернуть эту</button>`}</td></tr>`).join('')}</tbody></table></div>`;
+  $('up').onclick=async()=>{const f=$('zf').files[0];const m=$('um');if(!f){m.className='msg m-err';m.textContent='Выберите архив';m.hidden=false;return;}
+    m.className='msg';m.textContent='Загружаю…';m.hidden=false;const fd=new FormData();fd.append('file',f);
+    try{const j=await api('/api/admin/upload',{body:fd});m.className='msg m-ok';m.textContent=`Опубликовано: версия ${j.version}, актуально на ${j.asof}. Конструктивов: ${j.kons.length}.`;setTimeout(render,1500);}catch(x){m.className='msg m-err';m.textContent=x.message;}};
+  document.querySelectorAll('[data-a]').forEach(b=>b.onclick=async()=>{if(!confirm('Сделать эту версию действующей для всех?'))return;await api('/api/admin/activate',{json:{id:+b.dataset.a}});render();});
+}
+render();
+</script></body></html>
