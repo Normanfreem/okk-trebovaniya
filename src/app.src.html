@@ -735,18 +735,15 @@ function pageModel(k){
     const work=[];
     for(const e of els){const R=A.filter(q=>q.el===e);
       const hasP=R.some(q=>norm(q.block)===norm('Приёмка'));
-      if(!(hasP&&groupCards(R).length>6)&&!(!hasP&&els.length>=3)){
-        const R2=[...R].sort((a,b)=>blockOrder(a.block)-blockOrder(b.block));
-        secs.push({title:e,cards:groupCards(R2).map(c=>mk(c[0].mat||c[0].el,c.map(q=>({q,head:''})),e))});
-      } else if(hasP){
+      if(hasP&&groupCards(R).length>6){
         const bl=[...new Set(R.map(q=>q.block))].sort((a,b)=>blockOrder(a)-blockOrder(b));
         for(const b of bl){const cs=groupCards(R.filter(q=>q.block===b));secs.push({title:norm(b)===norm('Приёмка')?'Дефекты и допуски':(norm(b)===norm('Материал')?e:e+' — '+b.toLowerCase()),cards:cs.map(c=>mk(c[0].mat||c[0].el,c.map(q=>({q,head:''})),e))});}
       } else {
-        const R2=[...R].sort((a,b)=>blockOrder(a.block)-blockOrder(b.block));
-        work.push(mk(e,R2.map(q=>({q,head:q.mat||''})),e));
+        const R2=[...R].sort((a,b)=>blockOrder(a.block)-blockOrder(b.block));let prev='';
+        work.push(mk(e,R2.map(q=>{const hd=(q.mat||'')===prev||(q.mat||'')===e?'':(q.mat||'');prev=q.mat||'';return {q,head:hd};}),e));
       }
     }
-    if(work.length) secs.push({title:'Устройство конструктивных элементов',cards:work});
+    if(work.length) secs.push({title:secs.length?'Устройство конструктивных элементов':k,cards:work});
   } else {
     const bl=[...new Set(A.map(q=>q.block))].sort((a,b)=>blockOrder(a)-blockOrder(b));
     for(const b of bl){const cs=groupCards(A.filter(q=>q.block===b));secs.push({title:SECN[b]||b,cards:cs.map(c=>mk(c[0].mat||c[0].el,c.map(q=>({q,head:''})),els[0]))});}
@@ -762,7 +759,7 @@ function vKonPage(v){
   const rcIds=new Set(recent().map(r=>r.id));
   const usedDocs=[];secs.forEach(s=>s.cards.forEach(c=>c.docs.forEach(x=>{if(!usedDocs.includes(x.code))usedDocs.push(x.code);})));
   let h=`<div class="pg"><div class="pgh"><div class="cr">Конструктив · ${esc(k)}</div><h1>Требования: ${esc(k)}</h1><span class="srcb">Источник: таблица требований (Excel) · ${usedDocs.length} ${plural(usedDocs.length,'документ','документа','документов')} · актуально на ${esc(D.asof||'—')}</span></div>`;
-  h+=`<div class="pbar"><label class="search">${I.search}<input id="pq" type="search" placeholder="Поиск: B30, раковины, F150, Кф, ГОСТ 24547…" value="${esc(S.pq||'')}" autocomplete="off"></label><div class="chips" id="pchips"><button data-sf="" class="${!S.psf?'on':''}">Все</button>${secs.map(s=>`<button data-sf="${s.id}" class="${S.psf===s.id?'on':''}">${esc(s.title)}</button>`).join('')}</div></div>`;
+  h+=`<div class="pbar"><label class="search">${I.search}<input id="pq" type="search" placeholder="Поиск: B30, раковины, F150, Кф, ГОСТ 24547…" value="${esc(S.pq||'')}" autocomplete="off"></label><div class="chips" id="pchips"${secs.length<2?' hidden':''}><button data-sf="" class="${!S.psf?'on':''}">Все</button>${secs.map(s=>`<button data-sf="${s.id}" class="${S.psf===s.id?'on':''}">${esc(s.title)}</button>`).join('')}</div></div>`;
   h+=`<div class="pgrid"><nav class="ptoc" aria-label="Содержание">${secs.map(s=>`<div class="t">${esc(s.title)}</div>`+s.cards.map(c=>`<a data-to="${c.id}"><span>${c.num}</span>${esc(c.title)}</a>`).join('')).join('')}</nav><div class="pcol" style="display:flex;flex-direction:column;gap:14px;min-width:0">`;
   h+=secs.map(s=>`<section class="psec" id="${s.id}"><h2>${esc(s.title)} <small>${s.cards.length} поз.</small></h2>`+s.cards.map(c=>{
     const changed=c.parts.some(p=>p.q.date&&rcIds.has(p.q.id));
