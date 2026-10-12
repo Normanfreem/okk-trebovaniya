@@ -1467,6 +1467,7 @@ function letSnip(x,words,len){
 function vLetters(){
   setTop('Письма');
   const L=(D.letters||[]).slice().sort((a,b)=>dateNum(b.date)-dateNum(a.date));
+  const LID=x=>'lt-'+L.indexOf(x);
   const kons=[...new Set(L.flatMap(x=>x.kons.split(/\s*;\s*/).filter(Boolean)))].sort((a,b)=>a.localeCompare(b,'ru'));
   const cnt={a:L.filter(x=>x.status==='Действует').length,c:L.filter(x=>x.status==='Отменено').length,p:L.filter(x=>x.status!=='Действует'&&x.status!=='Отменено').length};
   let h=`<div class="pg dn lt"><div class="dhd"><span>${L.length} ${plural(L.length,'письмо','письма','писем')} · действуют ${cnt.a+cnt.p} · отменено ${cnt.c}</span></div>`;
@@ -1474,7 +1475,7 @@ function vLetters(){
   h+=`<div class="lcount" id="lcnt"></div><div class="llist">`+L.map(x=>{
     const st=x.status==='Отменено'?'c':(x.status==='Действует'?'a':'p');
     const files=[];if(x.file)files.push({file:x.file,what:'Письмо'});x.att.forEach((a,i)=>{if(a.file)files.push({file:a.file,what:'Прил. '+(i+1),title:a.what});});
-    return `<article class="lrow ${st}${LST.open.has(x.num)?' open':''}" id="lt-${esc(x.num)}" data-n="${esc(x.num)}">
+    return `<article class="lrow ${st}${LST.open.has(x.num)?' open':''}" id="${LID(x)}" data-n="${esc(x.num)}">
 <div class="lh"><span class="ld">${esc(x.date)}</span><span class="ln">№ ${esc(x.num)}</span><span class="lst ${st}">${st==='c'?'Отменено':st==='p'?'Изменено':'Действует'}</span></div>
 <h3>${esc(x.subj||'(без темы)')}</h3>
 ${st==='c'&&x.cby?`<div class="lnote c"><b>Отменено.</b> Взамен — ${letRefs(x.cby)}</div>`:''}
@@ -1495,11 +1496,11 @@ ${x.note?`<div class="lnote k">${esc(x.note)}</div>`:''}
     root.querySelectorAll('.lref').forEach(b=>b.onclick=e=>{e.stopPropagation();goL(b.dataset.lto);});
     root.querySelectorAll('.lexp').forEach(b=>b.onclick=e=>{e.stopPropagation();const r=b.closest('.lrow');r.classList.toggle('open');const o=r.classList.contains('open');o?LST.open.add(r.dataset.n):LST.open.delete(r.dataset.n);b.textContent=o?'Свернуть':'Подробнее';});
   };
-  const goL=n=>{let t=document.getElementById('lt-'+n);if(!t)return;if(t.hidden){LST.q='';LST.st='';LST.kon='';$('lq').value='';$('lkon').value='';apply();t=document.getElementById('lt-'+n);}
+  const goL=n=>{const x0=L.find(x=>x.num===n);if(!x0)return;let t=document.getElementById(LID(x0));if(!t)return;if(t.hidden){LST.q='';LST.st='';LST.kon='';$('lq').value='';$('lkon').value='';apply();t=document.getElementById(LID(x0));}
     t.classList.add('open');LST.open.add(n);const y=t.getBoundingClientRect().top+window.scrollY-(WIDE.matches?150:200);window.scrollTo({top:y,behavior:'smooth'});t.classList.add('hl');setTimeout(()=>t.classList.remove('hl'),1800);};
   function apply(){
     const words=norm(LST.q).split(' ').filter(Boolean);let n=0;
-    L.forEach(x=>{const el=document.getElementById('lt-'+x.num);el.innerHTML=base.get(el.id);el.classList.toggle('open',LST.open.has(x.num));
+    L.forEach(x=>{const el=document.getElementById(LID(x));el.innerHTML=base.get(el.id);el.classList.toggle('open',LST.open.has(x.num));
       const st=x.status==='Отменено'?'c':(x.status==='Действует'?'a':'p');
       const head=norm([x.num,x.date,x.subj,x.sum,x.kw,x.kons,x.cat,x.from,x.reply,x.note,x.cancels,x.changes,x.cby,x.chby,x.att.map(a=>a.what).join(' ')].join(' '));
       const bodyN=words.length?norm(letBody(x)):'';const txt=head+' '+bodyN;
