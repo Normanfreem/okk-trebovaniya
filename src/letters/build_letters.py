@@ -44,7 +44,7 @@ def to_pdf(src, dst):
         from PIL import Image
         im = Image.open(src).convert('RGB'); im.thumbnail((1800, 1800)); im.save(dst, 'PDF', resolution=150); return
     tmp = dst + '.gs.pdf'
-    r = subprocess.run(['gs', '-q', '-sDEVICE=pdfwrite', '-dPDFSETTINGS=/ebook', '-dCompatibilityLevel=1.5', '-dNOPAUSE', '-dBATCH',
+    r = subprocess.run(['gs', '-q', '-sDEVICE=pdfwrite', '-dPDFSETTINGS=/printer', '-dCompatibilityLevel=1.5', '-dNOPAUSE', '-dBATCH',
                         '-dDetectDuplicateImages=true', f'-sOutputFile={tmp}', src], capture_output=True)
     if r.returncode == 0 and os.path.exists(tmp) and 0 < os.path.getsize(tmp) < os.path.getsize(src) * 0.9:
         os.replace(tmp, dst)

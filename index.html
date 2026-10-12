@@ -266,7 +266,7 @@ body.ve main{max-width:none}
 .pfoot{font-size:12px;color:var(--ink3)}
 .pc mark{background:#ffe27a;color:inherit}
 .dmodal{position:fixed;inset:0;z-index:30;background:rgba(8,16,26,.6);display:flex;align-items:stretch;justify-content:center}
-.dmodal .dw{background:#2b2f33;display:flex;flex-direction:column;width:100%;max-width:1400px;margin:0}
+.dmodal .dw{background:#2b2f33;display:flex;flex-direction:column;width:100%;max-width:none;margin:0}
 .dmodal .dh{display:flex;align-items:center;gap:8px;padding:10px 12px;color:#fff;flex-wrap:wrap;padding-top:calc(10px + env(safe-area-inset-top,0px))}
 .dmodal .dh b{flex:1;min-width:120px;font-size:14px}
 .dmodal .dh button{background:transparent;border:1px solid #6b7177;color:#fff;border-radius:6px;padding:7px 12px;font-size:13px;cursor:pointer}
@@ -287,7 +287,7 @@ body.ve main{max-width:none}
   .prow{flex-direction:row}
   .pcl{flex:1}
   .pcr{width:250px;flex:none;border-top:0;border-left:1px solid var(--line)}
-  .dmodal{padding:3vh 3vw}
+  .dmodal{padding:1.2vh 1.2vw}
   .dmodal .dw{border-radius:10px;overflow:hidden}
 }
 
@@ -1612,7 +1612,7 @@ async function pdfInto(m,v,alive){
     const target=Math.min(Math.max(1,v.page),doc.numPages);
     m.querySelector('.pinfo').textContent=`Стр. ${target} из ${doc.numPages}`;
     const vps=[]; for(let i=1;i<=doc.numPages;i++){const p=await doc.getPage(i);vps.push(p.getViewport({scale:1}));}
-    let fitW=false;
+    let fitW=true;
     const baseW=()=>{const bw=Math.max(200,box.clientWidth||m.clientWidth);if(fitW)return bw;
       const bar=m.querySelector('.pdfbar');const hAvail=(m.clientHeight||window.innerHeight)-(bar?bar.offsetHeight:0)-24;const vp=vps[target-1];
       return Math.max(200,Math.min(bw,hAvail>200?hAvail*vp.width/vp.height:bw));};
