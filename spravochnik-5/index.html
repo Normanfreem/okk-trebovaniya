@@ -116,6 +116,7 @@ details.old summary{cursor:pointer;font-size:13px;color:var(--ink2)}
 details.old .kv{opacity:.75;text-decoration:line-through;text-decoration-color:var(--ink3);margin-top:6px}
 .nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
 .nav .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+.nav .in.n5{grid-template-columns:repeat(5,1fr)}
 .navb{background:none;border:0;padding:8px 2px 9px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--ink3);cursor:pointer;position:relative}
 .navb svg{width:22px;height:22px}
 .navb.on{color:var(--accent)}
@@ -353,6 +354,47 @@ body.vg .dcard.open .chev{transform:rotate(225deg);margin-top:10px}
   body.vd .dcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));align-items:start;gap:10px}
   body.vd .dg{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
 }
+
+/* ---- реестр писем ---- */
+.lt .pbar{z-index:4}
+.lt .dhd{margin:2px 0}
+.lt .dhd span{font-family:var(--mono);font-size:11.5px;color:var(--ink3)}
+.lt .chips select{flex:none;font:inherit;font-size:13px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 10px;max-width:230px}
+.lcount{font-size:12.5px;color:var(--ink3);margin:2px 0 6px;min-height:0}
+.lcount:empty{display:none}
+.llist{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.lrow{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:5px;scroll-margin-top:130px}
+.lrow.c{box-shadow:inset 3px 0 0 #c43a3a}
+.lrow.p{box-shadow:inset 3px 0 0 #d99a1e}
+.lrow.c h3,.lrow.c .lsum{color:var(--ink2)}
+.lrow.hl{outline:2px solid var(--accent);outline-offset:1px}
+.lh{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px}
+.ld,.ln{color:var(--ink2);font-variant-numeric:tabular-nums}
+.lst{margin-left:auto;font-size:11.5px;font-weight:500;border-radius:4px;padding:1px 7px}
+.lst.a{background:var(--ok-bg,#e1f2e7);color:var(--ok,#1f6b3f)}
+.lst.c{background:var(--bad-bg,#fbe5e5);color:var(--bad,#a02929)}
+.lst.p{background:var(--warn-bg,#fff0cf);color:var(--warn,#8a5200)}
+.lrow h3{margin:0;font-size:15px;font-weight:500;line-height:1.35}
+.lsum{font-size:13.5px;line-height:1.45;color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.lrow.open .lsum{display:block}
+.lnote{font-size:13px;line-height:1.45;border-radius:5px;padding:5px 8px}
+.lnote.c{background:var(--bad-bg,#fbe5e5);color:var(--bad,#a02929)}
+.lnote.c b{font-weight:500}
+.lnote.p{background:var(--warn-bg,#fff0cf);color:var(--ink)}
+.lnote.k{background:var(--surface2);color:var(--ink)}
+.lref{border:0;background:none;padding:0;font:inherit;color:var(--accent);text-decoration:underline;cursor:pointer;font-weight:500}
+.lmore{display:none;flex-direction:column;gap:6px}
+.lrow.open .lmore{display:flex}
+.lmore dl{display:grid;grid-template-columns:120px minmax(0,1fr);gap:3px 10px;margin:2px 0 0;font-size:13px}
+.lmore dt{color:var(--ink2)}
+.lmore dd{margin:0}
+.lft{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:2px}
+.lft button.dt.dc{display:inline-flex;width:auto;align-items:center;gap:6px;padding:3px 8px 3px 4px;border-radius:5px;font-size:12px;font-weight:400;background:var(--surface);border:1px solid var(--line2);line-height:1.3}
+.lft button.dt.dc .bd{margin:0;font-size:9px;font-weight:500;padding:1px 3px}
+.lexp{margin-left:auto;border:0;background:none;color:var(--accent);font:inherit;font-size:12.5px;cursor:pointer;padding:3px 2px}
+.lrow mark{background:#ffe27a;color:inherit}
+@media (max-width:999px){.lmore dl{grid-template-columns:1fr}.lmore dt{margin-top:4px;font-size:12px}}
+@media (min-width:1000px){.lt .pbar{top:60px}}
 /* ---- справочник: общие ---- */
 .req h3 .num:empty{display:none}
 .req h3 .num{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:500;margin-right:4px}
@@ -579,6 +621,7 @@ const I={
  db:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/><path d="M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/></svg>',
  upload:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 20h14"/></svg>',
  alert:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3l9.5 17h-19L12 3z"/><path d="M12 10v4M12 17.5v.01"/></svg>',
+ mail:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 6.5l8.5 6.5 8.5-6.5"/></svg>',
  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>'
 };
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -622,6 +665,7 @@ async function clearAll(){
 
 /* ---------- чтение Excel ---------- */
 const REQ_COLS={cat:['вид материала','вид мат'],id:['id'],obj:['объект'],kon:['конструктив'],el:['элемент'],block:['блок'],mat:['материал'],text:['требование'],doc:['документ','источник'],page:['стр','лист'],status:['статус'],repl:['заменено'],date:['дата'],note:['примечание']};
+const LET_COLS={num:['номер'],date:['дата'],from:['от кого'],to:['кому'],reply:['ответ на'],subj:['тема'],sum:['суть'],kw:['ключев'],cat:['категор'],kons:['конструктив'],status:['статус'],cby:['отменено'],cancels:['отменяет'],chby:['изменено'],changes:['изменяет'],note:['примечан'],file:['файл'],att:['приложен']};
 const DOC_COLS={code:['код'],type:['тип'],name:['наименование','обозначение'],date:['дата'],file:['файл'],text:['кратко','текст']};
 function fmtDate(v){
   if(v instanceof Date&&!isNaN(v)){const d=new Date(v.getTime()+12*3600e3);return String(d.getUTCDate()).padStart(2,'0')+'.'+String(d.getUTCMonth()+1).padStart(2,'0')+'.'+d.getUTCFullYear();}
@@ -653,6 +697,8 @@ function parseWorkbook(buf){
   let docs=[];
   if(sD){docs=mapRows(wb.Sheets[sD],DOC_COLS,'Документы',errs).rows.map(d=>({code:String(d.code).trim(),type:String(d.type).trim(),name:String(d.name).trim(),date:fmtDate(d.date),file:String(d.file).trim(),text:String(d.text).trim(),_row:d._row})).filter(d=>d.code);}
   else errs.push({lvl:'warn',t:'Нет листа «Документы» — ссылки на PDF работать не будут'});
+  let letters=[];const sL=findSheet(wb,'Письма');
+  if(sL){letters=mapRows(wb.Sheets[sL],LET_COLS,'Письма',errs).rows.map(o=>{const t=k=>String(o[k]==null?'':o[k]).trim();return {num:t('num'),date:fmtDate(o.date),from:t('from'),to:t('to'),reply:t('reply'),subj:t('subj'),sum:t('sum'),kw:t('kw'),cat:t('cat'),kons:t('kons'),status:t('status')||'Действует',cby:t('cby'),cancels:t('cancels'),chby:t('chby'),changes:t('changes'),note:t('note'),file:t('file'),att:t('att').split(/\n+/).map(l=>{const i=l.indexOf('|');return i<0?null:{file:l.slice(0,i).trim().replace(/^—$/,''),what:l.slice(i+1).trim()};}).filter(Boolean)};}).filter(x=>x.num);}
   let asof='';
   if(sI){const a=XLSX.utils.sheet_to_json(wb.Sheets[sI],{header:1,defval:'',raw:true});for(const r of a){if(norm(r[0]).startsWith('актуально')) asof=fmtDate(r[1]);}}
   if(!asof) errs.push({lvl:'warn',t:'На листе «Инфо» не заполнено «Актуально на»'});
@@ -676,7 +722,7 @@ function parseWorkbook(buf){
     if(!q.doc) errs.push({lvl:'warn',t:`Требования, строка ${q._row}: не указан документ`});
   }
   for(const q of reqs) if(q.repl&&!ids.has(q.repl)) errs.push({lvl:'warn',t:`Требования, строка ${q._row}: «Заменено на» ${q.repl} — такого ID нет`});
-  return {reqs,docs,asof,errs};
+  return {reqs,docs,asof,errs,letters};
 }
 
 /* ---------- импорт ---------- */
@@ -707,7 +753,7 @@ async function importFiles(files){
     const p=parseWorkbook(out.xlsx); res.errs=p.errs;
     if(p.errs.some(e=>e.lvl==='err')){res.failed=true;return res;}
     res.diff=makeDiff(prev,p);
-    data={reqs:p.reqs,docs:p.docs,asof:p.asof,loadedAt:Date.now(),prevAsof:prev?prev.asof:'',diff:res.diff,warns:p.errs};
+    data={reqs:p.reqs,docs:p.docs,letters:p.letters||[],asof:p.asof,loadedAt:Date.now(),prevAsof:prev?prev.asof:'',diff:res.diff,warns:p.errs};
   }
   for(const p of out.pdfs){
     const k=p.name.toLowerCase();
@@ -752,7 +798,7 @@ function recent(){ // изменения за 10 дней до даты акту
 }
 function hasDoc(q,c){return (q.docs||[{code:q.doc}]).some(x=>x.code===c);}
 function pagesIn(q,c){return (q.docs||[{code:q.doc,page:q.page}]).filter(x=>x.code===c).map(x=>x.page).join(', ');}
-function docBy(code){return D.docs.find(d=>d.code===code);}
+function docBy(code){const d=D.docs.find(d=>d.code===code);if(d)return d;if(String(code).startsWith('file:')){const f=String(code).slice(5);return {code:f.replace(/\.pdf$/i,''),file:f,type:'Письмо'};}}
 function hasPdf(doc){return doc&&doc.file&&PK.has(doc.file.toLowerCase());}
 function replacedBy(id){return D.reqs.filter(q=>q.repl===id);}
 const WIDE=window.matchMedia('(min-width:1000px)');
@@ -771,6 +817,8 @@ function setTop(title,crumb,back){
 function renderNav(){
   const n=D?recent().length:0;
   const t=[['home',VAR==='c'||VAR==='d'?'Справочник':'Конструктивы',I.layers],['mat','Материалы',I.box],['chg','Изменения',I.bell],['docs','Документы',I.file]];
+  if(D&&D.letters&&D.letters.length) t.splice(2,0,['let','Письма',I.mail]);
+  $('nav').classList.toggle('n5',t.length===5);
   $('nav').innerHTML=`<div class="brand">Требования ОКК${D&&D.asof?`<small>актуально на ${esc(D.asof)}</small>`:''}</div>`+t.map(([k,l,ic])=>`<button class="navb${S.tab===k&&!S.stack.length?' on':''}" data-tab="${k}">${ic}${k==='chg'&&n?`<span class="dot">${n}</span>`:''}<span>${l}</span></button>`).join('');
   $('nav').querySelectorAll('.navb').forEach(b=>b.onclick=()=>{S.tab=b.dataset.tab;S.stack=[];S.q='';render();window.scrollTo(0,0);});
   if(VAR==='d'&&D&&!S.gate){const home=$('nav').querySelector('[data-tab="home"]');home.insertAdjacentHTML('afterend',navTreeD());
@@ -805,7 +853,7 @@ function render(){
   if(S.gate) return vGate();
   if(!D){setTop('Требования ОКК');m.innerHTML=`<div class="empty">Данных пока нет.</div><button class="btn pri" id="up">${I.upload}Загрузить файл</button><button class="btn" id="demo">Открыть пример</button>`;$('up').onclick=pick;$('demo').onclick=loadDemo;return;}
   const v=S.stack[S.stack.length-1];
-  if(!v) return ({home:vHome,mat:vMatList,chg:vChanges,docs:vDocs})[S.tab]();
+  if(!v) return ({home:vHome,mat:vMatList,chg:vChanges,docs:vDocs,let:vLetters})[S.tab]();
   if(VE&&v.v==='el'){S.stack[S.stack.length-1]={v:'kon',k:v.k,focus:v.focus,back:v.back};return (VAR==='e'?vKonPage:vKonDense)(S.stack[S.stack.length-1]);}
   return ({kon:vKon,el:vEl,matOne:vMatOne,doc:vDoc,pdf:vPdf,data:vData,imp:vImport})[v.v](v);
 }
@@ -1379,6 +1427,67 @@ function vChanges(){
   }
   $('main').innerHTML=h;
   $('main').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{const r=D.reqs.find(x=>x.id===b.dataset.go);push({v:'el',k:r.kon,e:r.el,focus:r.id});});
+}
+
+/* ===== Реестр писем ===== */
+const LST={q:'',st:'',kon:'',open:new Set()};
+function letKey(x){return x.num;}
+function letFind(ref){const m=String(ref).match(/№\s*([^\s;]+)/);const n=m?m[1]:String(ref).trim();const k=n.replace(/[^0-9A-Za-zА-Яа-я]/g,'').toUpperCase();return (D.letters||[]).find(x=>x.num.replace(/[^0-9A-Za-zА-Яа-я]/g,'').toUpperCase()===k);}
+function letRefs(txt){ // «№ X от D: что; …» -> ссылки
+  return String(txt||'').split(/\n|;\s*(?=№)/).map(s=>s.trim()).filter(Boolean).map(s=>{const x=letFind(s);const m=s.match(/^(№\s*\S+(?:\s+от\s+[\d.]+)?)(.*)$/);const head=m?m[1]:s, rest=m?m[2].replace(/^\s*:\s*/,''):'';
+    return x?`<button class="lref" data-lto="${esc(x.num)}">${esc(head)}</button>${rest?' — '+esc(rest):''}`:esc(s);}).join('<br>');}
+function letShort(n){return String(n).replace(/^3024-(\d\d)-2266-/,'$1-');}
+function vLetters(){
+  setTop('Письма');
+  const L=(D.letters||[]).slice().sort((a,b)=>dateNum(b.date)-dateNum(a.date));
+  const kons=[...new Set(L.flatMap(x=>x.kons.split(/\s*;\s*/).filter(Boolean)))].sort((a,b)=>a.localeCompare(b,'ru'));
+  const cnt={a:L.filter(x=>x.status==='Действует').length,c:L.filter(x=>x.status==='Отменено').length,p:L.filter(x=>x.status!=='Действует'&&x.status!=='Отменено').length};
+  let h=`<div class="pg dn lt"><div class="dhd"><span>${L.length} ${plural(L.length,'письмо','письма','писем')} · действуют ${cnt.a+cnt.p} · отменено ${cnt.c}</span></div>`;
+  h+=`<div class="pbar"><label class="search">${I.search}<input id="lq" type="search" placeholder="Поиск: щебень, Кф, 8002, свая, геотекстиль…" value="${esc(LST.q)}" autocomplete="off"></label><div class="chips" id="lch"><button data-st="" class="${!LST.st?'on':''}">Все</button><button data-st="a" class="${LST.st==='a'?'on':''}">Действуют</button><button data-st="p" class="${LST.st==='p'?'on':''}">Изменены</button><button data-st="c" class="${LST.st==='c'?'on':''}">Отменены</button><select id="lkon" aria-label="Конструктив"><option value="">Все конструктивы</option>${kons.map(k=>`<option${LST.kon===k?' selected':''}>${esc(k)}</option>`).join('')}</select></div></div>`;
+  h+=`<div class="lcount" id="lcnt"></div><div class="llist">`+L.map(x=>{
+    const st=x.status==='Отменено'?'c':(x.status==='Действует'?'a':'p');
+    const files=[];if(x.file)files.push({file:x.file,what:'Письмо'});x.att.forEach((a,i)=>{if(a.file)files.push({file:a.file,what:'Прил. '+(i+1),title:a.what});});
+    return `<article class="lrow ${st}${LST.open.has(x.num)?' open':''}" id="lt-${esc(x.num)}" data-n="${esc(x.num)}">
+<div class="lh"><span class="ld">${esc(x.date)}</span><span class="ln">№ ${esc(x.num)}</span><span class="lst ${st}">${st==='c'?'Отменено':st==='p'?'Изменено':'Действует'}</span></div>
+<h3>${esc(x.subj||'(без темы)')}</h3>
+${st==='c'&&x.cby?`<div class="lnote c"><b>Отменено.</b> Взамен — ${letRefs(x.cby)}</div>`:''}
+${st==='p'&&x.chby?`<div class="lnote p">Изменено: ${letRefs(x.chby)}</div>`:''}
+<div class="lsum">${esc(x.sum)}</div>
+<div class="lmore">
+${x.cancels?`<div class="lnote k">Отменяет: ${letRefs(x.cancels)}</div>`:''}
+${x.changes?`<div class="lnote k">Изменяет: ${letRefs(x.changes)}</div>`:''}
+${x.note?`<div class="lnote k">${esc(x.note)}</div>`:''}
+<dl>${x.from?`<dt>От кого</dt><dd>${esc(x.from)}</dd>`:''}${x.to?`<dt>Кому</dt><dd>${esc(x.to)}</dd>`:''}${x.reply?`<dt>Ответ на</dt><dd>${esc(x.reply)}</dd>`:''}${x.cat?`<dt>Категория</dt><dd>${esc(x.cat)}</dd>`:''}${x.kons?`<dt>Конструктив</dt><dd>${esc(x.kons.replace(/;\s*/g,', '))}</dd>`:''}${x.kw?`<dt>Ключевые слова</dt><dd>${esc(x.kw)}</dd>`:''}${x.att.length?`<dt>Приложения</dt><dd>${x.att.map((a,i)=>`${i+1}. ${esc(a.what)}`).join('<br>')}</dd>`:''}</dl>
+</div>
+<div class="lft">${files.map(f=>`<button class="dt dc" data-doc="file:${esc(f.file)}" data-page="1" title="${esc(f.title||f.file)}"><span class="bd">PDF</span>${esc(f.what)}</button>`).join('')}<button class="lexp">${LST.open.has(x.num)?'Свернуть':'Подробнее'}</button></div>
+</article>`;}).join('')+`</div></div>`;
+  $('main').innerHTML=h;
+  const base=new Map();$('main').querySelectorAll('.lrow').forEach(r=>base.set(r.id,r.innerHTML));
+  const bind=root=>{
+    root.querySelectorAll('.dt').forEach(b=>b.onclick=e=>{e.stopPropagation();openModal({doc:b.dataset.doc,page:1});});
+    root.querySelectorAll('.lref').forEach(b=>b.onclick=e=>{e.stopPropagation();goL(b.dataset.lto);});
+    root.querySelectorAll('.lexp').forEach(b=>b.onclick=e=>{e.stopPropagation();const r=b.closest('.lrow');r.classList.toggle('open');const o=r.classList.contains('open');o?LST.open.add(r.dataset.n):LST.open.delete(r.dataset.n);b.textContent=o?'Свернуть':'Подробнее';});
+  };
+  const goL=n=>{let t=document.getElementById('lt-'+n);if(!t)return;if(t.hidden){LST.q='';LST.st='';LST.kon='';$('lq').value='';$('lkon').value='';apply();t=document.getElementById('lt-'+n);}
+    t.classList.add('open');LST.open.add(n);const y=t.getBoundingClientRect().top+window.scrollY-(WIDE.matches?150:200);window.scrollTo({top:y,behavior:'smooth'});t.classList.add('hl');setTimeout(()=>t.classList.remove('hl'),1800);};
+  function apply(){
+    const words=norm(LST.q).split(' ').filter(Boolean);let n=0;
+    L.forEach(x=>{const el=document.getElementById('lt-'+x.num);el.innerHTML=base.get(el.id);el.classList.toggle('open',LST.open.has(x.num));
+      const st=x.status==='Отменено'?'c':(x.status==='Действует'?'a':'p');
+      const txt=norm([x.num,x.date,x.subj,x.sum,x.kw,x.kons,x.cat,x.from,x.reply,x.note,x.cancels,x.changes,x.cby,x.chby,x.att.map(a=>a.what).join(' ')].join(' '));
+      const ok=(!LST.st||LST.st===st)&&(!LST.kon||x.kons.split(/\s*;\s*/).includes(LST.kon))&&words.every(w=>mw(txt,w));
+      el.hidden=!ok;if(ok)n++;
+      if(ok&&words.length){const ws=words.concat(words.map(w=>SYN[w]).filter(Boolean));el.querySelectorAll('h3,.lsum,dd,.ln').forEach(z=>markIn(z,ws));
+        if(!el.querySelector('h3 mark,.lsum mark,.ln mark'))el.classList.add('open');}
+      {const b=el.querySelector('.lexp');if(b)b.textContent=el.classList.contains('open')?'Свернуть':'Подробнее';}
+      bind(el);});
+    $('lcnt').textContent=(words.length||LST.st||LST.kon)?`Найдено: ${n}`:'';
+    $('lch').querySelectorAll('[data-st]').forEach(b=>b.classList.toggle('on',(b.dataset.st||'')===LST.st));
+  }
+  $('lq').oninput=()=>{LST.q=$('lq').value;apply();};
+  $('lch').querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>{LST.st=b.dataset.st;apply();});
+  $('lkon').onchange=()=>{LST.kon=$('lkon').value;apply();};
+  apply();
 }
 function vDocs(){
   setTop('Документы');
