@@ -386,7 +386,15 @@ body.vg .dcard.open .chev{transform:rotate(225deg);margin-top:10px}
 .lrow mark{background:#ffe27a;color:inherit}
 .lsnip{font-size:13px;line-height:1.45;background:var(--surface2);border-left:3px solid var(--accent);border-radius:4px;padding:5px 8px;color:var(--ink)}
 .lsnip>span:first-child{color:var(--ink2);font-size:12px}
-.dsr{margin:0 0 12px}
+.dsr{margin:0 0 6px}
+.dhint{font-size:12px;color:var(--ink3);margin:0 0 10px}
+.dseg{display:grid;grid-template-columns:1.25fr 1fr;gap:6px;margin:0 0 10px;max-width:900px;background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:4px}
+.dseg button{display:flex;align-items:center;justify-content:center;gap:8px;border:0;background:none;border-radius:7px;padding:9px 8px;font:inherit;font-size:14px;color:var(--ink2);cursor:pointer}
+.dseg button svg{width:18px;height:18px;flex:none}
+.dseg button span{white-space:nowrap}
+.dseg button small{font-family:var(--mono);font-size:11px;color:var(--ink3);margin-left:3px}
+@media (max-width:420px){.dseg button{font-size:13px;gap:6px;padding:9px 4px}.dseg button small{display:none}}
+.dseg button.on{background:var(--surface);color:var(--accent-ink);font-weight:500;box-shadow:0 1px 2px rgba(0,0,0,.08)}
 .dsr .lsnip{margin-top:4px}
 .dres{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
 .dres .tap .t small{white-space:normal}
@@ -1443,26 +1451,39 @@ ${x.note?`<div class="lnote k">${esc(x.note)}</div>`:''}
 }
 function vDocs(){
   setTop('Документы');
+  const hasL=!!(D.letters&&D.letters.length);
+  if(!hasL) S.dmode='docs'; else if(!S.dmode) S.dmode='let';
+  const L0=(D.letters||[]).slice().sort((a,b)=>dateNum(b.date)-dateNum(a.date));
   const types=[...new Set(D.docs.map(d=>d.type||'Прочее'))];
-  const hasL=D.letters&&D.letters.length;
-  $('main').innerHTML=`<label class="search dsr">${I.search}<input id="dq" type="search" placeholder="${hasL?'Поиск по тексту писем и документов…':'Поиск по документам…'}" value="${esc(S.dq||'')}" autocomplete="off"></label><div id="dres"></div><div id="dbody">`+types.map(t=>`<div class="lbl">${esc(t)}</div><div class="list">`+D.docs.filter(d=>(d.type||'Прочее')===t).sort((a,b)=>dateNum(b.date)-dateNum(a.date)).map(d=>{const n=D.reqs.filter(q=>hasDoc(q,d.code)&&q.status==='active').length;return row(esc(d.code),esc(d.name)+(d.date?' · '+esc(d.date):''),hasPdf(d)?`<span class="cnt">${n}</span>`:'<span class="pill p-old">нет PDF</span>',`data-d="${esc(d.code)}"`);}).join('')+`</div>`).join('')+(D.docs.length?'':'<div class="empty">Лист «Документы» пуст</div>')+'</div>';
-  $('main').querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>push({v:'doc',code:b.dataset.d}));
-  const run=()=>{const q=S.dq||'';const words=norm(q).split(' ').filter(Boolean);const R=$('dres');
-    if(!words.length){R.innerHTML='';$('dbody').hidden=false;return;}
-    $('dbody').hidden=true;
-    const ws=words.concat(words.map(w=>SYN[w]).filter(Boolean));
-    const L=(D.letters||[]).slice().sort((a,b)=>dateNum(b.date)-dateNum(a.date)).filter(x=>{const t=norm([x.num,x.date,x.subj,x.sum,x.kw,x.kons].join(' ')+' '+letBody(x));return words.every(w=>mw(t,w));});
-    const Dd=D.docs.filter(d=>{const t=norm([d.code,d.name,d.text,d.date].join(' '));return words.every(w=>mw(t,w));});
-    let h=`<div class="lcount">Найдено: писем ${L.length}${Dd.length?', документов '+Dd.length:''}</div>`;
-    if(L.length) h+=`<div class="lbl">Письма</div><div class="list dres">`+L.slice(0,80).map(x=>{const sn=letSnip(x,words,60);const st=x.status==='Отменено'?'<span class="lst c">Отменено</span>':x.status==='Действует'?'':'<span class="lst p">Изменено</span>';
-      return `<button class="tap" data-lt="${esc(x.num)}"><span class="t"><b>${esc(x.subj||x.num)} ${st}</b><small>№ ${esc(x.num)} от ${esc(x.date)}</small>${sn?`<span class="lsnip"><span>В тексте ${esc(sn.where)}:</span> ${esc(sn.text)}</span>`:''}</span>${I.chev}</button>`;}).join('')+`</div>`;
-    if(Dd.length) h+=`<div class="lbl">Документы</div><div class="list">`+Dd.map(d=>row(esc(d.code),esc(d.name),'',`data-d="${esc(d.code)}"`)).join('')+`</div>`;
-    if(!L.length&&!Dd.length) h+=`<div class="empty">Ничего не найдено</div>`;
-    R.innerHTML=h;R.querySelectorAll('.t b,.lsnip,small').forEach(z=>markIn(z,ws));
-    R.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>push({v:'doc',code:b.dataset.d}));
-    R.querySelectorAll('[data-lt]').forEach(b=>b.onclick=()=>{LST.q=S.dq;LST.st='';LST.kon='';LST.focus=b.dataset.lt;S.tab='let';S.stack=[];render();});
+  const mode=S.dmode;
+  let h='';
+  if(hasL) h+=`<div class="dseg" role="tablist"><button data-m="let" class="${mode==='let'?'on':''}" role="tab">${I.mail}<span>Поиск по письмам <small>${L0.length}</small></span></button><button data-m="docs" class="${mode==='docs'?'on':''}" role="tab">${I.file}<span>Документы <small>${D.docs.length}</small></span></button></div>`;
+  h+=mode==='let'
+    ?`<label class="search dsr">${I.search}<input id="dq" type="search" placeholder="Искать в тексте писем: щебень, Кф, лунки, 8002…" value="${esc(S.dql||'')}" autocomplete="off"></label><div class="dhint">Ищет по всему тексту писем и их приложений, номеру, дате и теме.</div><div id="dres"></div>`
+    :`<label class="search dsr">${I.search}<input id="dq" type="search" placeholder="Искать документ: ГОСТ, СП, шифр РД…" value="${esc(S.dqd||'')}" autocomplete="off"></label><div id="dres"></div><div id="dbody">`+types.map(t=>`<div class="lbl">${esc(t)}</div><div class="list">`+D.docs.filter(d=>(d.type||'Прочее')===t).sort((a,b)=>dateNum(b.date)-dateNum(a.date)).map(d=>{const n=D.reqs.filter(q=>hasDoc(q,d.code)&&q.status==='active').length;return row(esc(d.code),esc(d.name)+(d.date?' · '+esc(d.date):'')+` · ${n} ${plural(n,'требование','требования','требований')}`,'',`data-d="${esc(d.code)}"`);}).join('')+`</div>`).join('')+(D.docs.length?'':'<div class="empty">Лист «Документы» пуст</div>')+'</div>';
+  $('main').innerHTML=h;
+  $('main').querySelectorAll('.dseg [data-m]').forEach(b=>b.onclick=()=>{S.dmode=b.dataset.m;vDocs();setTimeout(()=>{const i=$('dq');if(i&&WIDE.matches)i.focus();},0);});
+  const bindD=root=>root.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>push({v:'doc',code:b.dataset.d}));
+  bindD($('main'));
+  const letRow=(x,words)=>{const sn=words.length?letSnip(x,words,60):null;const st=x.status==='Отменено'?'<span class="lst c">Отменено</span>':x.status==='Действует'?'':'<span class="lst p">Изменено</span>';
+    return `<button class="tap" data-lt="${esc(x.num)}"><span class="t"><b>${esc(x.subj||x.num)} ${st}</b><small>№ ${esc(x.num)} от ${esc(x.date)}</small>${sn?`<span class="lsnip"><span>В тексте ${esc(sn.where)}:</span> ${esc(sn.text)}</span>`:''}</span>${I.chev}</button>`;};
+  const run=()=>{const R=$('dres');
+    if(mode==='let'){
+      const q=S.dql||'';const words=norm(q).split(' ').filter(Boolean);const ws=words.concat(words.map(w=>SYN[w]).filter(Boolean));
+      const L=words.length?L0.filter(x=>{const t=norm([x.num,x.date,x.subj,x.sum,x.kw,x.kons,x.from,x.reply].join(' ')+' '+letBody(x));return words.every(w=>mw(t,w));}):L0;
+      R.innerHTML=(words.length?`<div class="lcount">Найдено писем: ${L.length}</div>`:`<div class="lbl">Все письма · ${L0.length}</div>`)+(L.length?`<div class="list dres">`+L.map(x=>letRow(x,words)).join('')+`</div>`:`<div class="empty">Ничего не найдено</div>`);
+      if(words.length) R.querySelectorAll('.t b,.lsnip,small').forEach(z=>markIn(z,ws));
+    } else {
+      const q=S.dqd||'';const words=norm(q).split(' ').filter(Boolean);
+      if(!words.length){R.innerHTML='';$('dbody').hidden=false;return;}
+      $('dbody').hidden=true;const ws=words.concat(words.map(w=>SYN[w]).filter(Boolean));
+      const Dd=D.docs.filter(d=>{const t=norm([d.code,d.name,d.text,d.date].join(' '));return words.every(w=>mw(t,w));});
+      R.innerHTML=`<div class="lcount">Найдено документов: ${Dd.length}</div>`+(Dd.length?`<div class="list">`+Dd.map(d=>row(esc(d.code),esc(d.name),'',`data-d="${esc(d.code)}"`)).join('')+`</div>`:`<div class="empty">Ничего не найдено</div>`);
+      R.querySelectorAll('.t b,small').forEach(z=>markIn(z,ws));bindD(R);
+    }
+    R.querySelectorAll('[data-lt]').forEach(b=>b.onclick=()=>{LST.q=S.dql||'';LST.st='';LST.kon='';LST.focus=b.dataset.lt;S.tab='let';S.stack=[];render();});
   };
-  $('dq').oninput=()=>{S.dq=$('dq').value;run();};
+  $('dq').oninput=()=>{if(mode==='let')S.dql=$('dq').value;else S.dqd=$('dq').value;run();};
   run();
 }
 function vDoc(v){
