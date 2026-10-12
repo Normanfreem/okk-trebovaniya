@@ -393,6 +393,14 @@ body.vg .dcard.open .chev{transform:rotate(225deg);margin-top:10px}
 .lft button.dt.dc .bd{margin:0;font-size:9px;font-weight:500;padding:1px 3px}
 .lexp{margin-left:auto;border:0;background:none;color:var(--accent);font:inherit;font-size:12.5px;cursor:pointer;padding:3px 2px}
 .lrow mark{background:#ffe27a;color:inherit}
+.lsnip{font-size:13px;line-height:1.45;background:var(--surface2);border-left:3px solid var(--accent);border-radius:4px;padding:5px 8px;color:var(--ink)}
+.lsnip>span:first-child{color:var(--ink2);font-size:12px}
+.dsr{margin:0 0 12px}
+.dsr .lsnip{margin-top:4px}
+.dres{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.dres .tap .t small{white-space:normal}
+.dres .tap .t b .lst{margin-left:6px;vertical-align:1px}
+.dres .lsnip{display:block;font-weight:400;margin-top:5px}
 @media (max-width:999px){.lmore dl{grid-template-columns:1fr}.lmore dt{margin-top:4px;font-size:12px}}
 @media (min-width:1000px){.lt .pbar{top:60px}}
 /* ---- справочник: общие ---- */
@@ -740,6 +748,7 @@ async function importFiles(files){
         if(b.startsWith('~$')||b.startsWith('.')) continue;
         if(bl.endsWith('.xlsx')&&!out.xlsx){out.xlsx=await e.async('arraybuffer');out.xname=b;}
         else if(bl.endsWith('.pdf')) out.pdfs.push({name:b,blob:await e.async('blob')});
+        else if(bl.endsWith('.json')&&bl.includes('тексты')){try{out.ltext=JSON.parse(await e.async('string'));}catch(x){}}
       }
     }else if(n.endsWith('.xlsx')){out.xlsx=await f.arrayBuffer();out.xname=f.name;}
     else if(n.endsWith('.pdf')) out.pdfs.push({name:f.name,blob:f});
@@ -762,6 +771,7 @@ async function importFiles(files){
   }
   if(!out.xlsx&&!out.pdfs.length){res.failed=true;res.errs=[{lvl:'err',t:'В выбранных файлах нет ни Excel (.xlsx), ни PDF'}];return res;}
   if(!data){res.failed=true;res.errs.push({lvl:'err',t:'Сначала загрузите Excel с требованиями'});return res;}
+  if(out.ltext) await put('kv','ltext',out.ltext);
   data.lastImport={at:Date.now(),pdfNew:res.pdfNew,xname:out.xname};
   await put('kv','data',data);
   return res;
@@ -1437,13 +1447,22 @@ function letRefs(txt){ // «№ X от D: что; …» -> ссылки
   return String(txt||'').split(/\n|;\s*(?=№)/).map(s=>s.trim()).filter(Boolean).map(s=>{const x=letFind(s);const m=s.match(/^(№\s*\S+(?:\s+от\s+[\d.]+)?)(.*)$/);const head=m?m[1]:s, rest=m?m[2].replace(/^\s*:\s*/,''):'';
     return x?`<button class="lref" data-lto="${esc(x.num)}">${esc(head)}</button>${rest?' — '+esc(rest):''}`:esc(s);}).join('<br>');}
 function letShort(n){return String(n).replace(/^3024-(\d\d)-2266-/,'$1-');}
+
+function letBody(x){return [x.file?LTX[x.file]||'':''].concat(x.att.map(a=>a.file?LTX[a.file]||'':'')).join('\n');}
+function letSnip(x,words,len){
+  const parts=[{t:x.file?LTX[x.file]||'':'',w:'письма'}].concat(x.att.map((a,i)=>({t:a.file?LTX[a.file]||'':'',w:'приложения '+(i+1)})));
+  for(const w of words){if(w.length<2)continue;for(const p of parts){const lo=p.t.toLowerCase().replace(/ё/g,'е');const i=lo.indexOf(w);if(i<0)continue;
+    const a=Math.max(0,lo.lastIndexOf(' ',Math.max(0,i-(len||80)))),b=Math.min(p.t.length,i+w.length+(len||120));
+    return {where:p.w,text:(a>0?'…':'')+p.t.slice(a,b).replace(/\s+/g,' ').trim()+(b<p.t.length?'…':'')};}}
+  return null;
+}
 function vLetters(){
   setTop('Письма');
   const L=(D.letters||[]).slice().sort((a,b)=>dateNum(b.date)-dateNum(a.date));
   const kons=[...new Set(L.flatMap(x=>x.kons.split(/\s*;\s*/).filter(Boolean)))].sort((a,b)=>a.localeCompare(b,'ru'));
   const cnt={a:L.filter(x=>x.status==='Действует').length,c:L.filter(x=>x.status==='Отменено').length,p:L.filter(x=>x.status!=='Действует'&&x.status!=='Отменено').length};
   let h=`<div class="pg dn lt"><div class="dhd"><span>${L.length} ${plural(L.length,'письмо','письма','писем')} · действуют ${cnt.a+cnt.p} · отменено ${cnt.c}</span></div>`;
-  h+=`<div class="pbar"><label class="search">${I.search}<input id="lq" type="search" placeholder="Поиск: щебень, Кф, 8002, свая, геотекстиль…" value="${esc(LST.q)}" autocomplete="off"></label><div class="chips" id="lch"><button data-st="" class="${!LST.st?'on':''}">Все</button><button data-st="a" class="${LST.st==='a'?'on':''}">Действуют</button><button data-st="p" class="${LST.st==='p'?'on':''}">Изменены</button><button data-st="c" class="${LST.st==='c'?'on':''}">Отменены</button><select id="lkon" aria-label="Конструктив"><option value="">Все конструктивы</option>${kons.map(k=>`<option${LST.kon===k?' selected':''}>${esc(k)}</option>`).join('')}</select></div></div>`;
+  h+=`<div class="pbar"><label class="search">${I.search}<input id="lq" type="search" placeholder="Поиск по тексту писем: щебень, Кф, 8002, свая…" value="${esc(LST.q)}" autocomplete="off"></label><div class="chips" id="lch"><button data-st="" class="${!LST.st?'on':''}">Все</button><button data-st="a" class="${LST.st==='a'?'on':''}">Действуют</button><button data-st="p" class="${LST.st==='p'?'on':''}">Изменены</button><button data-st="c" class="${LST.st==='c'?'on':''}">Отменены</button><select id="lkon" aria-label="Конструктив"><option value="">Все конструктивы</option>${kons.map(k=>`<option${LST.kon===k?' selected':''}>${esc(k)}</option>`).join('')}</select></div></div>`;
   h+=`<div class="lcount" id="lcnt"></div><div class="llist">`+L.map(x=>{
     const st=x.status==='Отменено'?'c':(x.status==='Действует'?'a':'p');
     const files=[];if(x.file)files.push({file:x.file,what:'Письмо'});x.att.forEach((a,i)=>{if(a.file)files.push({file:a.file,what:'Прил. '+(i+1),title:a.what});});
@@ -1474,11 +1493,13 @@ ${x.note?`<div class="lnote k">${esc(x.note)}</div>`:''}
     const words=norm(LST.q).split(' ').filter(Boolean);let n=0;
     L.forEach(x=>{const el=document.getElementById('lt-'+x.num);el.innerHTML=base.get(el.id);el.classList.toggle('open',LST.open.has(x.num));
       const st=x.status==='Отменено'?'c':(x.status==='Действует'?'a':'p');
-      const txt=norm([x.num,x.date,x.subj,x.sum,x.kw,x.kons,x.cat,x.from,x.reply,x.note,x.cancels,x.changes,x.cby,x.chby,x.att.map(a=>a.what).join(' ')].join(' '));
+      const head=norm([x.num,x.date,x.subj,x.sum,x.kw,x.kons,x.cat,x.from,x.reply,x.note,x.cancels,x.changes,x.cby,x.chby,x.att.map(a=>a.what).join(' ')].join(' '));
+      const bodyN=words.length?norm(letBody(x)):'';const txt=head+' '+bodyN;
       const ok=(!LST.st||LST.st===st)&&(!LST.kon||x.kons.split(/\s*;\s*/).includes(LST.kon))&&words.every(w=>mw(txt,w));
       el.hidden=!ok;if(ok)n++;
       if(ok&&words.length){const ws=words.concat(words.map(w=>SYN[w]).filter(Boolean));el.querySelectorAll('h3,.lsum,dd,.ln').forEach(z=>markIn(z,ws));
-        if(!el.querySelector('h3 mark,.lsum mark,.ln mark'))el.classList.add('open');}
+        const inHead=words.every(w=>mw(head,w));
+        if(!inHead||!el.querySelector('h3 mark,.lsum mark,.ln mark')){const sn=letSnip(x,words.filter(w=>!mw(head,w)).concat(words));if(sn){el.querySelector('.lsum').insertAdjacentHTML('afterend',`<div class="lsnip"><span>В тексте ${esc(sn.where)}:</span> ${esc(sn.text)}</div>`);markIn(el.querySelector('.lsnip'),ws);}else if(!el.querySelector('h3 mark,.lsum mark,.ln mark'))el.classList.add('open');}}
       {const b=el.querySelector('.lexp');if(b)b.textContent=el.classList.contains('open')?'Свернуть':'Подробнее';}
       bind(el);});
     $('lcnt').textContent=(words.length||LST.st||LST.kon)?`Найдено: ${n}`:'';
@@ -1488,12 +1509,31 @@ ${x.note?`<div class="lnote k">${esc(x.note)}</div>`:''}
   $('lch').querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>{LST.st=b.dataset.st;apply();});
   $('lkon').onchange=()=>{LST.kon=$('lkon').value;apply();};
   apply();
+  if(LST.focus){const n=LST.focus;LST.focus='';setTimeout(()=>goL(n),50);}
 }
 function vDocs(){
   setTop('Документы');
   const types=[...new Set(D.docs.map(d=>d.type||'Прочее'))];
-  $('main').innerHTML=types.map(t=>`<div class="lbl">${esc(t)}</div><div class="list">`+D.docs.filter(d=>(d.type||'Прочее')===t).sort((a,b)=>dateNum(b.date)-dateNum(a.date)).map(d=>{const n=D.reqs.filter(q=>hasDoc(q,d.code)&&q.status==='active').length;return row(esc(d.code),esc(d.name)+(d.date?' · '+esc(d.date):''),hasPdf(d)?`<span class="cnt">${n}</span>`:'<span class="pill p-old">нет PDF</span>',`data-d="${esc(d.code)}"`);}).join('')+`</div>`).join('')||'<div class="empty">Лист «Документы» пуст</div>';
+  const hasL=D.letters&&D.letters.length;
+  $('main').innerHTML=`<label class="search dsr">${I.search}<input id="dq" type="search" placeholder="${hasL?'Поиск по тексту писем и документов…':'Поиск по документам…'}" value="${esc(S.dq||'')}" autocomplete="off"></label><div id="dres"></div><div id="dbody">`+types.map(t=>`<div class="lbl">${esc(t)}</div><div class="list">`+D.docs.filter(d=>(d.type||'Прочее')===t).sort((a,b)=>dateNum(b.date)-dateNum(a.date)).map(d=>{const n=D.reqs.filter(q=>hasDoc(q,d.code)&&q.status==='active').length;return row(esc(d.code),esc(d.name)+(d.date?' · '+esc(d.date):''),hasPdf(d)?`<span class="cnt">${n}</span>`:'<span class="pill p-old">нет PDF</span>',`data-d="${esc(d.code)}"`);}).join('')+`</div>`).join('')+(D.docs.length?'':'<div class="empty">Лист «Документы» пуст</div>')+'</div>';
   $('main').querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>push({v:'doc',code:b.dataset.d}));
+  const run=()=>{const q=S.dq||'';const words=norm(q).split(' ').filter(Boolean);const R=$('dres');
+    if(!words.length){R.innerHTML='';$('dbody').hidden=false;return;}
+    $('dbody').hidden=true;
+    const ws=words.concat(words.map(w=>SYN[w]).filter(Boolean));
+    const L=(D.letters||[]).slice().sort((a,b)=>dateNum(b.date)-dateNum(a.date)).filter(x=>{const t=norm([x.num,x.date,x.subj,x.sum,x.kw,x.kons].join(' ')+' '+letBody(x));return words.every(w=>mw(t,w));});
+    const Dd=D.docs.filter(d=>{const t=norm([d.code,d.name,d.text,d.date].join(' '));return words.every(w=>mw(t,w));});
+    let h=`<div class="lcount">Найдено: писем ${L.length}${Dd.length?', документов '+Dd.length:''}</div>`;
+    if(L.length) h+=`<div class="lbl">Письма</div><div class="list dres">`+L.slice(0,80).map(x=>{const sn=letSnip(x,words,60);const st=x.status==='Отменено'?'<span class="lst c">Отменено</span>':x.status==='Действует'?'':'<span class="lst p">Изменено</span>';
+      return `<button class="tap" data-lt="${esc(x.num)}"><span class="t"><b>${esc(x.subj||x.num)} ${st}</b><small>№ ${esc(x.num)} от ${esc(x.date)}</small>${sn?`<span class="lsnip"><span>В тексте ${esc(sn.where)}:</span> ${esc(sn.text)}</span>`:''}</span>${I.chev}</button>`;}).join('')+`</div>`;
+    if(Dd.length) h+=`<div class="lbl">Документы</div><div class="list">`+Dd.map(d=>row(esc(d.code),esc(d.name),'',`data-d="${esc(d.code)}"`)).join('')+`</div>`;
+    if(!L.length&&!Dd.length) h+=`<div class="empty">Ничего не найдено</div>`;
+    R.innerHTML=h;R.querySelectorAll('.t b,.lsnip,small').forEach(z=>markIn(z,ws));
+    R.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>push({v:'doc',code:b.dataset.d}));
+    R.querySelectorAll('[data-lt]').forEach(b=>b.onclick=()=>{LST.q=S.dq;LST.st='';LST.kon='';LST.focus=b.dataset.lt;S.tab='let';S.stack=[];render();});
+  };
+  $('dq').oninput=()=>{S.dq=$('dq').value;run();};
+  run();
 }
 function vDoc(v){
   const d=docBy(v.code)||{code:v.code};
@@ -1571,7 +1611,8 @@ $('file').onchange=async e=>{
   await reload();
   S.tab='home';S.stack=[{v:'imp',r}];render();window.scrollTo(0,0);
 };
-async function reload(){D=await get('kv','data')||null;PK=await pdfKeys();}
+let LTX={};
+async function reload(){D=await get('kv','data')||null;PK=await pdfKeys();try{LTX=(await get('kv','ltext'))||{};}catch(e){LTX={};}}
 async function loadDemo(){
   const bin=atob(DEMO_B64);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
   await clearAll();

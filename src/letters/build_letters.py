@@ -51,6 +51,15 @@ def to_pdf(src, dst):
     else:
         if os.path.exists(tmp): os.remove(tmp)
         shutil.copy(src, dst)
+TIDX = {(r['dir'], r['file']): r['key'] for r in json.load(open(os.path.join(HERE, 'text_index.json')))}
+TEXTS = {}
+def body(folder_name, fname):
+    k = TIDX.get((folder_name, fname))
+    if not k: return ''
+    t = open(os.path.join(HERE, 'text', k + '.txt')).read()
+    t = re.sub(r'[\ue000-\uf8ff\x00-\x08\x0b\x0e-\x1f\u25a1\ufffd]', ' ', t)
+    t = re.sub(r'[ \t\u00a0]+', ' ', t); t = re.sub(r'\s*\n\s*', '\n', t); t = t.replace('\f', '\n')
+    return t.strip()
 safe = lambda s: re.sub(r'[\\/:*?"<>|]', '-', s)
 for x in L:
     folder = os.path.join(SRC, x['folder'])
@@ -60,6 +69,7 @@ for x in L:
         fn = base + '.pdf'
         if fn.lower() in have: x['file'] = fn  # уже есть среди документов требований
         else: to_pdf(os.path.join(folder, x['main_file']), os.path.join(out_dir, fn)); x['file'] = fn
+        TEXTS[fn] = body(x['folder'], x['main_file'])
     att = []
     i = 0
     for a in x['attachments']:
@@ -68,7 +78,7 @@ for x in L:
         if a['file'].lower().endswith(('.pdf', '.jpg', '.jpeg', '.png')):
             if a['file'].lower().endswith('.pdf') and any(b['file'].lower().endswith('.docx') for b in []): pass
             i += 1; fn = f"{base} — приложение {i}.pdf"
-            to_pdf(p, os.path.join(out_dir, fn)); att.append((fn, a['what']))
+            to_pdf(p, os.path.join(out_dir, fn)); att.append((fn, a['what'])); TEXTS[fn] = body(x['folder'], a['file'])
         elif a['file'].lower().endswith('.xlsx'):
             att.append(('', a['what'] + ' (таблица Excel — в приложении не открывается)'))
     x['att'] = att
@@ -113,5 +123,6 @@ for r in wd.iter_rows(min_row=2):
             if r[2].value and '(PDF нет)' in str(r[2].value): r[2].value = str(r[2].value).replace(' (PDF нет)', '')
             if r[5].value and str(r[5].value).startswith('PDF письма не загружен.'): r[5].value = str(r[5].value).replace('PDF письма не загружен. ', '')
 wb.save(xp)
+json.dump(TEXTS, open(os.path.join(out_dir, '_тексты писем.json'), 'w'), ensure_ascii=False)
 tot = sum(os.path.getsize(os.path.join(out_dir, f)) for f in os.listdir(out_dir))
 print('писем', len(L), 'отменено', sum(1 for x in L if x['number'] in cancelled), 'изменено', len(changed), 'файлов', len(os.listdir(out_dir)), 'МБ', round(tot / 1e6, 1))
