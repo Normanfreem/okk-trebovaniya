@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Письма ОКК — пример подключения</title>
+<style>body{margin:0;background:#eef1f0}</style>
+</head><body>
+<div id="letters"></div>
+<script src="okk-letters.js"></script>
+<script>OKKLetters.mount(document.getElementById('letters'), {data: 'data/letters.json', pdfBase: 'data/pdf/'});</script>
+</body></html>
